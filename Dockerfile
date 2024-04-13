@@ -1,3 +1,4 @@
 FROM amazoncorretto:17
-COPY build/libs/*.jar stylescanner.jar
-ENTRYPOINT ["java", "-jar", "/stylescanner.jar"]
+ARG JAR_FILE=/build/libs/*.jar
+COPY ${JAR_FILE} /stylescanner.jar
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=prod", "/stylescanner.jar"]
