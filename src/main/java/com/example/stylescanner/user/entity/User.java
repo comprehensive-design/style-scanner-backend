@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,12 +15,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "user") // This should match the table name in your database
+@Table(name = "user")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id", updatable = false)
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -29,7 +28,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "display_name", nullable = false)
+    @Column(nullable = false)
     private String displayName;
 
     @Column(nullable = false)
@@ -49,10 +48,9 @@ public class User {
     private LocalDateTime createdAt;
 
 
-    // If you are using Lombok @Builder, you should include all the fields in the builder method
     @Builder
     public User(String email, String password, String displayName, LocalDate birthdate, Byte gender,
-                String profilePictureUrl, String bio, LocalDateTime createdAt) {
+                String profilePictureUrl, String bio) {
         this.email = email;
         this.password = password;
         this.displayName = displayName;
@@ -60,6 +58,5 @@ public class User {
         this.gender = gender;
         this.profilePictureUrl = profilePictureUrl;
         this.bio = bio;
-        this.createdAt = createdAt;
     }
 }

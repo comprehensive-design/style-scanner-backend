@@ -1,6 +1,5 @@
-package com.example.stylescanner.item_like.entity;
+package com.example.stylescanner.follow.entity;
 
-import com.example.stylescanner.item.entity.Item;
 import com.example.stylescanner.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -11,28 +10,29 @@ import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
-@Setter
-@Getter
 @Entity
+@Getter
+@Setter
 @NoArgsConstructor
-@Table(name = "item_like")
-public class Item_Like {
+@Table(name = "follow")
+public class Follow {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @ManyToOne
-    private Item item;
+    @Column(nullable = false)
+    private String followeeId;
 
     @ManyToOne
     private User user;
 
+    @CreatedDate
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
     @Builder
-    public Item_Like(Item item, User user) {
-        this.item = item;
+    public Follow(String followeeId, User user) {
+        this.followeeId = followeeId;
         this.user = user;
     }
 }

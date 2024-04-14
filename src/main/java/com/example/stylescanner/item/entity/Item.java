@@ -1,25 +1,23 @@
 package com.example.stylescanner.item.entity;
 
-
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.net.URL;
 
 @Setter
 @Getter
 @Entity
 @NoArgsConstructor
+@Table(name = "item")
 public class Item {
     @Id
-    @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer item_id;
+    private Long id;
 
     @Column(nullable = false)
-    private URL feed_url;
+    private String feedUrl;
 
     @Column(nullable = false)
     private String name;
@@ -28,6 +26,13 @@ public class Item {
     private Integer price;
 
     @Column(nullable = false)
-    private URL item_url;
+    private String itemUrl;
 
+    @Builder
+    public Item(String feedUrl, String name, Integer price, String itemUrl) {
+        this.feedUrl = feedUrl;
+        this.name = name;
+        this.price = price;
+        this.itemUrl = itemUrl;
+    }
 }
