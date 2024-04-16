@@ -12,5 +12,4 @@ public class StylescannerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(StylescannerApplication.class, args);
 	}
-
 }
