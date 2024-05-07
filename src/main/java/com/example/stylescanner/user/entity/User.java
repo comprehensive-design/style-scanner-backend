@@ -1,13 +1,9 @@
 package com.example.stylescanner.user.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
-
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -16,8 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Table(name = "user")
-public class User {
-
+public class User{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -47,16 +42,22 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-
     @Builder
     public User(String email, String password, String displayName, LocalDate birthdate, Byte gender,
-                String profilePictureUrl, String bio) {
+                LocalDateTime createdAt, String profilePictureUrl, String bio) {
         this.email = email;
         this.password = password;
         this.displayName = displayName;
         this.birthdate = birthdate;
         this.gender = gender;
+        this.createdAt = createdAt;
         this.profilePictureUrl = profilePictureUrl;
         this.bio = bio;
     }
+
+
+    public void passwordEncode(PasswordEncoder passwordEncoder){
+        this.password = passwordEncoder.encode(this.password);
+    }
+
 }
