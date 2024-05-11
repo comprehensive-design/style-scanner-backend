@@ -3,14 +3,14 @@ package com.example.stylescanner.user.api;
 import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.user.dto.UserRegisterRequestDto;
 import com.example.stylescanner.user.dto.UserSignRequestDto;
+import com.example.stylescanner.user.dto.UserUpdateInfoDto;
 import com.example.stylescanner.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RequestMapping("/api/user")
@@ -32,4 +32,16 @@ public interface UserApi {
     @Operation(summary = "로그인 메서드", description = "사용자의 아이디, 패스워드를 받아 인증합니다. ")
     ResponseEntity<JwtDto> login(@RequestBody UserSignRequestDto requestDto);
 
+
+    @GetMapping("/me")
+    @Operation(summary = "사용자 본인 정보 조회 메서드", description = "사용자가 본인의 정보를 조회하기 위한 메서드입니다.")
+    ResponseEntity<User> read(HttpServletRequest request);
+
+    @PostMapping("/update")
+    @Operation(summary = "사용자 정보 업데이트 메서드", description = "사용자의 수정된 정보를 받아 업데이트 합니다.")
+    ResponseEntity<Boolean> update(HttpServletRequest request, @RequestBody UserUpdateInfoDto requestDto);
+
+    @PostMapping("/withdrawal")
+    @Operation(summary = "사용자 탈퇴 메서드", description = "사용자가 탈퇴하는 메서드입니다. ")
+    ResponseEntity<Boolean> withdrawal(HttpServletRequest request);
 }
