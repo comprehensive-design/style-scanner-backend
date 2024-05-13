@@ -4,6 +4,7 @@ import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.jwt.provider.JwtProvider;
 import com.example.stylescanner.user.dto.UserRegisterRequestDto;
 import com.example.stylescanner.user.dto.UserSignRequestDto;
+import com.example.stylescanner.user.dto.UserUpdateInfoDto;
 import com.example.stylescanner.user.entity.User;
 import com.example.stylescanner.user.repository.UserRepository;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,6 +34,11 @@ public class UserService  {
     public User read(Long id){
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
+
+    public User read(String email){
+        return userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
 
     public boolean signup(UserRegisterRequestDto requestDto) {
         String email = requestDto.getEmail();
@@ -76,4 +82,36 @@ public class UserService  {
 
     }
 
+    public Boolean update(String email, UserUpdateInfoDto requestDto) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (requestDto.getDisplayName() != null) {
+            user.setDisplayName(requestDto.getDisplayName());
+        }
+        if (requestDto.getGender() != null) {
+            user.setGender(requestDto.getGender());
+        }
+        if (requestDto.getBirthdate() != null) {
+            user.setBirthdate(requestDto.getBirthdate());
+        }
+        if (requestDto.getProfilePictureUrl() != null) {
+            user.setProfilePictureUrl(requestDto.getProfilePictureUrl());
+        }
+        if (requestDto.getBio() != null) {
+            user.setBio(requestDto.getBio());
+        }
+        if (requestDto.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        }
+
+        userRepository.save(user);
+
+        return true;
+    }
+
+    public Boolean withdrawal(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        userRepository.delete(user);
+        return true;
+    }
 }

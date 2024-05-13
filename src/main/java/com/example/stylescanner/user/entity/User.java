@@ -55,9 +55,7 @@ public class User{
         this.bio = bio;
     }
 
-
     public void passwordEncode(PasswordEncoder passwordEncoder){
         this.password = passwordEncoder.encode(this.password);
     }
-
 }
