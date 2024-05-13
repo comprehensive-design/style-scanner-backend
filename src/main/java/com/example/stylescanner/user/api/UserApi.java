@@ -1,7 +1,8 @@
 package com.example.stylescanner.user.api;
 
+import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.user.dto.UserRegisterRequestDto;
-import com.example.stylescanner.user.dto.UserRegisterResponseDto;
+import com.example.stylescanner.user.dto.UserSignRequestDto;
 import com.example.stylescanner.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +26,10 @@ public interface UserApi {
 
     @PostMapping("/signup")
     @Operation(summary = "(회원가입)사용자 등록 메서드", description = "사용자의 가입 정보를 DB에 등록합니다.")
-    User signup(@RequestBody UserRegisterRequestDto requestDto);
+    ResponseEntity<Boolean> signup(@RequestBody UserRegisterRequestDto requestDto);
+
+    @PostMapping("/login")
+    @Operation(summary = "로그인 메서드", description = "사용자의 아이디, 패스워드를 받아 인증합니다. ")
+    ResponseEntity<JwtDto> login(@RequestBody UserSignRequestDto requestDto);
 
 }

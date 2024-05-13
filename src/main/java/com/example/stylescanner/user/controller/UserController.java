@@ -1,8 +1,9 @@
 package com.example.stylescanner.user.controller;
 
+import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.user.api.UserApi;
 import com.example.stylescanner.user.dto.UserRegisterRequestDto;
-import com.example.stylescanner.user.dto.UserRegisterResponseDto;
+import com.example.stylescanner.user.dto.UserSignRequestDto;
 import com.example.stylescanner.user.entity.User;
 import com.example.stylescanner.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +31,15 @@ public class UserController implements UserApi {
     }
 
     @Override
-    public User signup(UserRegisterRequestDto requestDto) {
-        userService.signup(requestDto);
-        return requestDto.toEntity();
+    public ResponseEntity<Boolean> signup(UserRegisterRequestDto requestDto) {
+        return new ResponseEntity<>(userService.signup(requestDto), HttpStatus.OK);
     }
+
+    @Override
+    public ResponseEntity<JwtDto> login(UserSignRequestDto requestDto) {
+        return new ResponseEntity<>(userService.login(requestDto), HttpStatus.OK);
+    }
+
 
 
 }
