@@ -34,5 +34,6 @@ public class Follow {
     public Follow(String followeeId, User user) {
         this.followeeId = followeeId;
         this.user = user;
+        this.createdAt = LocalDateTime.now();
     }
 }
