@@ -41,6 +41,10 @@ dependencies {
 	// 스프링 시큐리티를 테스트하기 위한 의존성 추가
 	testImplementation 'org.springframework.security:spring-security-test'
 
+	//selenium -> 인스타 크롤링 (셀럽 검색, 피드 가져오기)
+	implementation 'org.seleniumhq.selenium:selenium-java:4.6.0'
+
+	implementation group: 'org.json', name: 'json', version: '20160810'
 
 	//validation 지원 x -> ingection
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
