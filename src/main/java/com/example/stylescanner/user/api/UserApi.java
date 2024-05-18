@@ -44,4 +44,8 @@ public interface UserApi {
     @PostMapping("/withdrawal")
     @Operation(summary = "사용자 탈퇴 메서드", description = "사용자가 탈퇴하는 메서드입니다. ")
     ResponseEntity<Boolean> withdrawal(HttpServletRequest request);
+
+    @GetMapping("/emailcheck")
+    @Operation(summary="이메일 중복 확인 메서드", description = "이메일을 받아 존재하는지 확인하는 메서드입니다.")
+    ResponseEntity<Boolean> emailcheck(@RequestParam(value = "email") String email);
 }

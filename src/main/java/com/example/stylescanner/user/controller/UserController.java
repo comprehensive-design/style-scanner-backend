@@ -59,8 +59,12 @@ public class UserController implements UserApi {
     @Override
     public ResponseEntity<Boolean> withdrawal(HttpServletRequest request) {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
-
         return ResponseEntity.ok(userService.withdrawal(email));
+    }
+
+    @Override
+    public ResponseEntity<Boolean> emailcheck(String email) {
+        return ResponseEntity.ok(userService.emailcheck(email));
     }
 
 

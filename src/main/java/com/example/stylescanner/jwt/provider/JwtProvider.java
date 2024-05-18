@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
-@RequiredArgsConstructor
+
 @Component
 public class JwtProvider {
 
@@ -31,6 +31,10 @@ public class JwtProvider {
     private final long refreshExp = 1000L * 60 * 60 * 24 * 14; // 14 days in milliseconds
 
     private final JpaUserDetailsService userDetailsService;
+
+    public JwtProvider(JpaUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @PostConstruct
     protected void init() {

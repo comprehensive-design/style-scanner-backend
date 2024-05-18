@@ -114,4 +114,13 @@ public class UserService  {
         userRepository.delete(user);
         return true;
     }
+
+    public Boolean emailcheck(String email) {
+        Optional<User> checkUserEmail = userRepository.findByEmail(email);
+        if(checkUserEmail.isPresent()) {
+            return true;
+        }else{
+            return false;
+        }
+    }
 }
