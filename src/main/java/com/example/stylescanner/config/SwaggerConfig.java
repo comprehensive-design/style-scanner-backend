@@ -1,4 +1,4 @@
-package com.example.stylescanner.swagger.config;
+package com.example.stylescanner.config;
 
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
