@@ -39,17 +39,35 @@ public class InstagramGraphApiUtil {
         conn.setRequestMethod("GET");
         conn.setDoOutput(true);
 
-        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        StringBuilder sb=new StringBuilder();
-        String line = null;
+        int responseCode = conn.getResponseCode();
 
-        while((line = rd.readLine()) != null) {
-            sb.append(line);
+        if(responseCode == 200) {
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb=new StringBuilder();
+            String line = null;
+
+            while((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+
+            JSONObject obj = new JSONObject(sb.toString());
+
+            return obj;
+        }else{
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            if (response.toString().contains("Invalid user id")) {
+                return null;
+            }
         }
 
-        JSONObject obj = new JSONObject(sb.toString());
-
-        return obj;
+        return null;
     }
 
     /**
@@ -60,6 +78,11 @@ public class InstagramGraphApiUtil {
         URL url = new URL(API_URL + IG_USER_ID + url_format);
 
         JSONObject obj = GetAPIData(url);
+
+        if(obj == null){
+            return null;
+        }
+
         JSONObject businessDiscovery = obj.getJSONObject("business_discovery");
         CelebProfileResponseDto celebProfileResponseDto = new CelebProfileResponseDto();
         celebProfileResponseDto.setProfileName(celeb_id);
@@ -187,7 +210,6 @@ public class InstagramGraphApiUtil {
 
                 if(data.has("children")){
                     JSONArray children = data.getJSONObject("children").getJSONArray("data");
-                    System.out.println(children);
                     for(int j=1; j<children.length(); j++) {
                         media_url.add(children.getJSONObject(j).getString("media_url"));
                     }

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class FollowService {
@@ -40,9 +39,12 @@ public class FollowService {
     }
 
     public CelebProfileResponseDto search(String keyword) {
-        System.out.println(keyword);
         try {
-            return instagramGraphApiUtil.SearchCeleb(keyword);
+            if(instagramGraphApiUtil.SearchCeleb(keyword) == null){
+                return null;
+            }else{
+                return instagramGraphApiUtil.SearchCeleb(keyword);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -51,13 +53,27 @@ public class FollowService {
     public Boolean follow(String email, FollowingRequestDto requestDto) {
         User user =  userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("not found user"));
 
-        Follow follow = Follow.builder()
-                .followeeId(requestDto.getFolloweeId())
-                .user(user)
-                .build();
+        try {
+            if(instagramGraphApiUtil.SearchCeleb(requestDto.getFolloweeId()) == null){
+                return false;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        followRepository.save(follow);
-        return true;
+
+        //중복 팔로잉 방지
+        if(followRepository.existsByFolloweeIdAndUser(requestDto.getFolloweeId(),user)){
+            return false;
+        }else {
+            Follow follow = Follow.builder()
+                    .followeeId(requestDto.getFolloweeId())
+                    .user(user)
+                    .build();
+
+            followRepository.save(follow);
+            return true;
+        }
     }
 
     public FollowingListResponseDto followingList(String email)
@@ -65,6 +81,7 @@ public class FollowService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("not found user"));
 
         List<Follow> follows = followRepository.findByUser(user);
+        System.out.println(follows);
         FollowingListResponseDto responseDto = new FollowingListResponseDto();
         List<CelebProfileResponseDto> celebProfileList = new ArrayList<>();
 
