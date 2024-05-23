@@ -39,4 +39,8 @@ public interface FollowApi {
     @PostMapping("/unfollowing")
     @Operation(summary = "사용자 언팔로잉 메서드", description = "언팔로잉 하는 셀럽 followeeId를 넘겨주면 해당 셀럽의 팔로잉을 정보를 제거합니다.")
     ResponseEntity<Boolean> unfollow(HttpServletRequest request, @RequestBody UnFollowingRequestDto requestDto);
+
+    @GetMapping("/checkFollowing")
+    @Operation(summary = "팔로잉 체크 메서드", description = "셀럽의 아이디값을 넘겨주면 해당 셀럽의 팔로잉 유무를 반환합니다")
+    ResponseEntity<Boolean> checkFollowing(HttpServletRequest httpServletRequest, @RequestParam(value="keyword") String keyword);
 }

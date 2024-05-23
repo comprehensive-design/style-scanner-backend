@@ -110,4 +110,14 @@ public class FollowService {
 
         return true;
     }
+
+    public Boolean checkFollowing(String email, String keyword) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("not found user"));
+
+        if(followRepository.existsByFolloweeIdAndUser(keyword, user)){
+            return false;
+        }else{
+            return true;
+        }
+    }
 }
