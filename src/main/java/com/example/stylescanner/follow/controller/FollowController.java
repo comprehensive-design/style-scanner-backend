@@ -55,4 +55,10 @@ public class FollowController implements FollowApi {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
         return ResponseEntity.ok(followService.unfollow(email,requestDto));
     }
+
+    @Override
+    public ResponseEntity<Boolean> checkFollowing(HttpServletRequest httpServletRequest, String keyword) {
+        String email = jwtProvider.getAccount(jwtProvider.resolveToken(httpServletRequest).substring(7));
+        return ResponseEntity.ok(followService.checkFollowing(email, keyword));
+    }
 }
