@@ -2,6 +2,7 @@ package com.example.stylescanner.user.api;
 
 import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.user.dto.UserRegisterRequestDto;
+import com.example.stylescanner.user.dto.UserRegisterResponseDto;
 import com.example.stylescanner.user.dto.UserSignRequestDto;
 import com.example.stylescanner.user.dto.UserUpdateInfoDto;
 import com.example.stylescanner.user.entity.User;
@@ -35,7 +36,7 @@ public interface UserApi {
 
     @GetMapping("/me")
     @Operation(summary = "사용자 본인 정보 조회 메서드", description = "사용자가 본인의 정보를 조회하기 위한 메서드입니다.")
-    ResponseEntity<User> read(HttpServletRequest request);
+    ResponseEntity<UserRegisterResponseDto> read(HttpServletRequest request);
 
     @PostMapping("/update")
     @Operation(summary = "사용자 정보 업데이트 메서드", description = "사용자의 수정된 정보를 받아 업데이트 합니다.")

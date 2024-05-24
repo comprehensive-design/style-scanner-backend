@@ -3,6 +3,7 @@ package com.example.stylescanner.user.service;
 import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.jwt.provider.JwtProvider;
 import com.example.stylescanner.user.dto.UserRegisterRequestDto;
+import com.example.stylescanner.user.dto.UserRegisterResponseDto;
 import com.example.stylescanner.user.dto.UserSignRequestDto;
 import com.example.stylescanner.user.dto.UserUpdateInfoDto;
 import com.example.stylescanner.user.entity.User;
@@ -35,8 +36,9 @@ public class UserService  {
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    public User read(String email){
-        return userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public UserRegisterResponseDto read(String email){
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return new UserRegisterResponseDto(user);
     }
 
 
