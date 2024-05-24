@@ -1,10 +1,7 @@
 package com.example.stylescanner.instagram.service;
 
 import com.example.stylescanner.follow.dto.FollowingListResponseDto;
-import com.example.stylescanner.instagram.dto.CelebInstaResponseDto;
-import com.example.stylescanner.instagram.dto.CelebProfileResponseDto;
-import com.example.stylescanner.instagram.dto.FeedDto;
-import com.example.stylescanner.instagram.dto.HomeFeedResponseDto;
+import com.example.stylescanner.instagram.dto.*;
 import com.example.stylescanner.instagram.util.InstagramGraphApiUtil;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +45,7 @@ public class InstagramService {
                 List<FeedDto> feedList = instagramGraphApiUtil.GetRecentCelebFeed(username);
                 AllFeedList.addAll(feedList);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                return null;
             }
         }
 
@@ -60,7 +57,4 @@ public class InstagramService {
 
         return homeFeedResponseDto;
     }
-
-
-
 }

@@ -188,7 +188,7 @@ public class InstagramGraphApiUtil {
      * @throws IOException
      */
     public List<FeedDto> GetRecentCelebFeed(String username) throws IOException {
-        String url_format = String.format( "?fields=business_discovery.username(%s){media{media_type,media_url,children{media_url},timestamp}}&access_token=%s"
+        String url_format = String.format( "?fields=business_discovery.username(%s){media{media_type,media_url,children{media_url,media_type},timestamp}}&access_token=%s"
                             ,username,ACCESS_TOKEN);
         URL url = new URL(API_URL +IG_USER_ID + url_format);
 
@@ -206,12 +206,16 @@ public class InstagramGraphApiUtil {
             if(media_type.equals("IMAGE")||media_type.equals("CAROUSEL_ALBUM")) {
                 //피드 사진
                 List<String> media_url = new ArrayList<>();
-                media_url.add(data.getString("media_url"));
-
-                if(data.has("children")){
-                    JSONArray children = data.getJSONObject("children").getJSONArray("data");
-                    for(int j=1; j<children.length(); j++) {
-                        media_url.add(children.getJSONObject(j).getString("media_url"));
+                if(media_type.equals("IMAGE")){
+                    media_url.add(data.getString("media_url"));
+                }else{
+                    if(data.has("children")){
+                        JSONArray children = data.getJSONObject("children").getJSONArray("data");
+                        for(int j=0; j<children.length(); j++) {
+                            if(children.getJSONObject(j).getString("media_type").equals("IMAGE")){
+                                media_url.add(children.getJSONObject(j).getString("media_url"));
+                            }
+                        }
                     }
                 }
 
@@ -230,6 +234,7 @@ public class InstagramGraphApiUtil {
                 feedDto.setMedia_id(id);
                 feedDtoList.add(feedDto);
             }
+
         }
 
         return  feedDtoList.stream()
