@@ -1,5 +1,6 @@
 package com.example.stylescanner.user.api;
 
+import com.example.stylescanner.error.StateResponse;
 import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.user.dto.UserRegisterRequestDto;
 import com.example.stylescanner.user.dto.UserRegisterResponseDto;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,18 +35,20 @@ public interface UserApi {
     @Operation(summary = "로그인 메서드", description = "사용자의 아이디, 패스워드를 받아 인증합니다. ")
     ResponseEntity<JwtDto> login(@RequestBody UserSignRequestDto requestDto);
 
-
     @GetMapping("/me")
     @Operation(summary = "사용자 본인 정보 조회 메서드", description = "사용자가 본인의 정보를 조회하기 위한 메서드입니다.")
     ResponseEntity<UserRegisterResponseDto> read(HttpServletRequest request);
 
     @PostMapping("/update")
     @Operation(summary = "사용자 정보 업데이트 메서드", description = "사용자의 수정된 정보를 받아 업데이트 합니다.")
-    ResponseEntity<Boolean> update(HttpServletRequest request, @RequestBody UserUpdateInfoDto requestDto);
+    ResponseEntity<StateResponse> update(HttpServletRequest request, @RequestBody UserUpdateInfoDto requestDto);
+
+    @PostMapping("/updateProfile")
+    ResponseEntity<StateResponse> updateProfile(HttpServletRequest request, @RequestPart(value="profilePictureUrl")  MultipartFile profilePicture);
 
     @PostMapping("/withdrawal")
     @Operation(summary = "사용자 탈퇴 메서드", description = "사용자가 탈퇴하는 메서드입니다. ")
-    ResponseEntity<Boolean> withdrawal(HttpServletRequest request);
+    ResponseEntity<StateResponse>  withdrawal(HttpServletRequest request);
 
     @GetMapping("/emailcheck")
     @Operation(summary="이메일 중복 확인 메서드", description = "이메일을 받아 존재하는지 확인하는 메서드입니다.")
