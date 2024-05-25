@@ -36,8 +36,9 @@ public class Comment {
     private LocalDateTime createdAt;
 
     @Builder
-    public Comment(String content, Post post, User user) {
+    public Comment(String content, Post post, User user, LocalDateTime createdAt) {
         this.content = content;
+        this.createdAt = createdAt;
         this.post = post;
         this.user = user;
     }
