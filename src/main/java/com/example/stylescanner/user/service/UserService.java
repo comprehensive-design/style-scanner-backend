@@ -1,5 +1,7 @@
 package com.example.stylescanner.user.service;
 
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.example.stylescanner.error.StateResponse;
 import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.jwt.provider.JwtProvider;
 import com.example.stylescanner.user.dto.UserRegisterRequestDto;
@@ -8,24 +10,38 @@ import com.example.stylescanner.user.dto.UserSignRequestDto;
 import com.example.stylescanner.user.dto.UserUpdateInfoDto;
 import com.example.stylescanner.user.entity.User;
 import com.example.stylescanner.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 
 @Service
 public class UserService  {
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String buketName;
+
+    private final AmazonS3 amazonS3;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider, AmazonS3 amazonS3) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
+        this.amazonS3 = amazonS3;
     }
 
     public List<User> list(){
@@ -46,7 +62,6 @@ public class UserService  {
         String email = requestDto.getEmail();
         String password = passwordEncoder.encode(requestDto.getPassword());
 
-        //회원 중복 체크
         Optional <User> checkUserEmail = userRepository.findByEmail(email);
         if(checkUserEmail.isPresent()) {
             throw new IllegalArgumentException("이미 등록된 사용자입니다.");
@@ -84,7 +99,7 @@ public class UserService  {
 
     }
 
-    public Boolean update(String email, UserUpdateInfoDto requestDto) {
+    public ResponseEntity<StateResponse> update(String email, UserUpdateInfoDto requestDto) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (requestDto.getDisplayName() != null) {
@@ -96,9 +111,6 @@ public class UserService  {
         if (requestDto.getBirthdate() != null) {
             user.setBirthdate(requestDto.getBirthdate());
         }
-        if (requestDto.getProfilePictureUrl() != null) {
-            user.setProfilePictureUrl(requestDto.getProfilePictureUrl());
-        }
         if (requestDto.getBio() != null) {
             user.setBio(requestDto.getBio());
         }
@@ -107,14 +119,13 @@ public class UserService  {
         }
 
         userRepository.save(user);
-
-        return true;
+        return ResponseEntity.ok(StateResponse.builder().code("SUCCESS").message("정보를 성공적으로 업데이트했습니다.").build());
     }
 
-    public Boolean withdrawal(String email) {
+    public ResponseEntity<StateResponse> withdrawal(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
         userRepository.delete(user);
-        return true;
+        return ResponseEntity.ok(StateResponse.builder().code("SUCCESS").message("성공적으로 회원탈퇴 처리되었습니다.").build());
     }
 
     public Boolean emailcheck(String email) {
@@ -124,5 +135,50 @@ public class UserService  {
         }else{
             return false;
         }
+    }
+
+    private String saveProfilePicture(MultipartFile profilePicture)  {
+        String originalFilename = profilePicture.getOriginalFilename();
+        String fileExtension = "";
+        if (originalFilename != null && !originalFilename.isEmpty()) {
+            fileExtension = "." + originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+        }
+
+        String uniqueFilename = UUID.randomUUID() + fileExtension;
+        String fileUrl = "https://" + buketName + ".s3.amazonaws.com/" + uniqueFilename;
+
+        try {
+            amazonS3.putObject(new PutObjectRequest(buketName,uniqueFilename,profilePicture.getInputStream(),null));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload file to S3");
+        }
+
+        return fileUrl;
+    }
+
+    public ResponseEntity<StateResponse> updateProfile(String email, MultipartFile profilePicture) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String profilePictureUrl = saveProfilePicture(profilePicture);
+
+        String previousProfile = user.getProfilePictureUrl();
+        user.setProfilePictureUrl(profilePictureUrl);
+
+        //이전 프로필 이미지는 삭제
+        if(!previousProfile.equals("null")){
+            String filename = previousProfile.substring(previousProfile.lastIndexOf("/") + 1);
+            // Check if the object exists before attempting to delete it
+            if (amazonS3.doesObjectExist(buketName, filename)) {
+                try {
+                    amazonS3.deleteObject(new DeleteObjectRequest(buketName, filename));
+                } catch (Exception e) {
+                    user.setProfilePictureUrl(previousProfile);
+                    throw new RuntimeException("Failed to delete file from S3", e);
+                }
+            }
+        }
+
+        userRepository.save(user);
+        return ResponseEntity.ok(StateResponse.builder().code("SUCCESS").message("프로필 이미지를 성공적으로 등록했습니다.").build());
     }
 }

@@ -1,5 +1,6 @@
 package com.example.stylescanner.user.controller;
 
+import com.example.stylescanner.error.StateResponse;
 import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.jwt.provider.JwtProvider;
 import com.example.stylescanner.user.api.UserApi;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -52,21 +54,25 @@ public class UserController implements UserApi {
     }
 
     @Override
-    public ResponseEntity<Boolean> update(HttpServletRequest request, UserUpdateInfoDto requestDto) {
+    public ResponseEntity<StateResponse> update(HttpServletRequest request, UserUpdateInfoDto requestDto) {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
-        return ResponseEntity.ok(userService.update(email,requestDto));
+        return userService.update(email,requestDto);
     }
 
     @Override
-    public ResponseEntity<Boolean> withdrawal(HttpServletRequest request) {
+    public ResponseEntity<StateResponse> updateProfile(HttpServletRequest request, MultipartFile profilePicture) {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
-        return ResponseEntity.ok(userService.withdrawal(email));
+        return userService.updateProfile(email,profilePicture);
+    }
+
+    @Override
+    public ResponseEntity<StateResponse> withdrawal(HttpServletRequest request) {
+        String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
+        return userService.withdrawal(email);
     }
 
     @Override
     public ResponseEntity<Boolean> emailcheck(String email) {
         return ResponseEntity.ok(userService.emailcheck(email));
     }
-
-
 }
