@@ -188,7 +188,7 @@ public class InstagramGraphApiUtil {
      * @throws IOException
      */
     public List<FeedDto> GetRecentCelebFeed(String username) throws IOException {
-        String url_format = String.format( "?fields=business_discovery.username(%s){media{media_type,media_url,children{media_url,media_type},timestamp}}&access_token=%s"
+        String url_format = String.format( "?fields=business_discovery.username(%s){media.limit(1){media_type,media_url,children{media_url,media_type},timestamp}}&access_token=%s"
                             ,username,ACCESS_TOKEN);
         URL url = new URL(API_URL +IG_USER_ID + url_format);
 
