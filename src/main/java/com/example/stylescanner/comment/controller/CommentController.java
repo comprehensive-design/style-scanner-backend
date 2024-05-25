@@ -30,8 +30,8 @@ public class CommentController implements CommentApi {
 
     @Override
     public ResponseEntity<StateResponse> create(@RequestBody CommentCreateDto commentCreateDto, HttpServletRequest request){
-        String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
-        return commentService.create(email, commentCreateDto);
+        String currentUserEmail = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
+        return commentService.create(commentCreateDto, currentUserEmail);
     }
 
     @Override

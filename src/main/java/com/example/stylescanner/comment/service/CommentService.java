@@ -31,8 +31,8 @@ public class CommentService {
     }
 
 
-    public ResponseEntity<StateResponse> create(String email, CommentCreateDto commentCreateDto) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("not found user"));
+    public ResponseEntity<StateResponse> create( CommentCreateDto commentCreateDto, String currentUserEmail) {
+        User user = userRepository.findByEmail(currentUserEmail).orElseThrow(() -> new IllegalArgumentException("not found user"));
         Post post = postRepository.findById(commentCreateDto.getPostId()).orElseThrow(() -> new IllegalArgumentException("not found user"));
 
         Comment comment = Comment.builder()
