@@ -4,6 +4,7 @@ import com.example.stylescanner.jwt.dto.JwtDto;
 import com.example.stylescanner.jwt.provider.JwtProvider;
 import com.example.stylescanner.user.api.UserApi;
 import com.example.stylescanner.user.dto.UserRegisterRequestDto;
+import com.example.stylescanner.user.dto.UserRegisterResponseDto;
 import com.example.stylescanner.user.dto.UserSignRequestDto;
 import com.example.stylescanner.user.dto.UserUpdateInfoDto;
 import com.example.stylescanner.user.entity.User;
@@ -45,7 +46,7 @@ public class UserController implements UserApi {
     }
 
     @Override
-    public ResponseEntity<User> read(HttpServletRequest request) {
+    public ResponseEntity<UserRegisterResponseDto> read(HttpServletRequest request) {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
         return ResponseEntity.ok(userService.read(email));
     }
