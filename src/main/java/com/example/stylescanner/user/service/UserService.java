@@ -165,7 +165,7 @@ public class UserService  {
         user.setProfilePictureUrl(profilePictureUrl);
 
         //이전 프로필 이미지는 삭제
-        if(!previousProfile.equals("null")){
+        if(previousProfile != null){
             String filename = previousProfile.substring(previousProfile.lastIndexOf("/") + 1);
             // Check if the object exists before attempting to delete it
             if (amazonS3.doesObjectExist(buketName, filename)) {
