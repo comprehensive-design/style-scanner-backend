@@ -57,4 +57,13 @@ public class InstagramService {
 
         return homeFeedResponseDto;
     }
+
+    public FeedDto readFeed(FeedRequestDto feedRequestDto) {
+        String mediaId = feedRequestDto.getMedia_id();
+        String feedIndex = feedRequestDto.getFeed_index();
+        int feed_index = Integer.parseInt(feedIndex) % 25;
+        String beforeCursor = feedRequestDto.getBefore_cursor();
+        String username = feedRequestDto.getUsername();
+        return instagramGraphApiUtil.GetMedia(username,  mediaId, beforeCursor,feed_index);
+    }
 }

@@ -12,4 +12,6 @@ public class FeedDto {
     String profile_url;
     LocalDateTime timestamp;
     String media_id;
+    int feed_index;
+    String before_cursor;
 }
