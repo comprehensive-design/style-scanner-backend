@@ -2,6 +2,7 @@ package com.example.stylescanner.follow.api;
 
 import com.example.stylescanner.follow.dto.FollowingListResponseDto;
 import com.example.stylescanner.follow.dto.FollowingRequestDto;
+import com.example.stylescanner.follow.dto.RecommendResponseDto;
 import com.example.stylescanner.follow.dto.UnFollowingRequestDto;
 import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.instagram.dto.CelebProfileResponseDto;
@@ -43,4 +44,9 @@ public interface FollowApi {
     @GetMapping("/checkFollowing")
     @Operation(summary = "팔로잉 체크 메서드", description = "셀럽의 아이디값을 넘겨주면 해당 셀럽의 팔로잉 유무를 반환합니다")
     ResponseEntity<Boolean> checkFollowing(HttpServletRequest httpServletRequest, @RequestParam(value="keyword") String keyword);
+
+    @GetMapping("/recommend")
+    @Operation(summary = "셀럽 추천 메서드", description = "현재 사용자의 팔로잉 목록을 바탕으로 다른 셀럽 계정을 추천합니다.")
+    List<RecommendResponseDto> recommend(HttpServletRequest httpServletRequest);
+
 }

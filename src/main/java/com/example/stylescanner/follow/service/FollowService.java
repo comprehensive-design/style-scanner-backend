@@ -2,6 +2,7 @@ package com.example.stylescanner.follow.service;
 
 import com.example.stylescanner.follow.dto.FollowingListResponseDto;
 import com.example.stylescanner.follow.dto.FollowingRequestDto;
+import com.example.stylescanner.follow.dto.RecommendResponseDto;
 import com.example.stylescanner.follow.dto.UnFollowingRequestDto;
 import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.follow.repository.FollowRepository;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class FollowService {
@@ -121,5 +124,43 @@ public class FollowService {
         }else{
             return true;
         }
+    }
+
+    public List<RecommendResponseDto> recommend(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("not found user"));
+
+        List<Follow> userFollows = followRepository.findByUser(user);
+        List<String> userFolloweeIds = userFollows.stream().map(Follow::getFolloweeId)
+                .collect(Collectors.toList());
+
+        List<Map<String, Object>> recommendedFolloweesWithCount = followRepository.findRecommendedFolloweesWithCount(userFolloweeIds, user);
+
+        List<String> recommendList = recommendedFolloweesWithCount.stream()
+                .map(result -> (String) result.get("followeeId"))
+                .collect(Collectors.toList());
+
+        List<RecommendResponseDto> recommendedResponseDtoList = new ArrayList<>();
+
+        int cnt = 0;
+        for(String celeb_id : recommendList){
+            if(cnt>6) break;
+            CelebProfileResponseDto profile_info =  search(celeb_id);
+            RecommendResponseDto recommendedResponseDto = new RecommendResponseDto();
+            recommendedResponseDto.setProfileName(celeb_id);
+            recommendedResponseDto.setProfilePictureUrl(profile_info.getProfilePictureUrl());
+            recommendedResponseDto.setProfileFollowerCount(profile_info.getProfileFollowerCount());
+
+            //최근 3 피드 이미지 가져오기
+            try {
+                List<String> media_list =  instagramGraphApiUtil.GetRecentCelebFeed(celeb_id, 3);
+                recommendedResponseDto.setFeed_3_list(media_list);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            recommendedResponseDtoList.add(recommendedResponseDto);
+            cnt++;
+        }
+        return recommendedResponseDtoList;
     }
 }
