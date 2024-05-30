@@ -4,6 +4,8 @@ import com.example.stylescanner.follow.dto.FollowingListResponseDto;
 import com.example.stylescanner.follow.service.FollowService;
 import com.example.stylescanner.instagram.api.InstagramApi;
 import com.example.stylescanner.instagram.dto.CelebInstaResponseDto;
+import com.example.stylescanner.instagram.dto.FeedDto;
+import com.example.stylescanner.instagram.dto.FeedRequestDto;
 import com.example.stylescanner.instagram.dto.HomeFeedResponseDto;
 import com.example.stylescanner.instagram.service.InstagramService;
 import com.example.stylescanner.jwt.provider.JwtProvider;
@@ -28,5 +30,10 @@ public class InstagramController implements InstagramApi {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
         FollowingListResponseDto followingList =  followService.followingList(email);
         return instagramService.readHomeFeed(followingList);
+    }
+
+    @Override
+    public FeedDto getFeed(FeedRequestDto feedRequestDto) {
+        return instagramService.readFeed(feedRequestDto);
     }
 }

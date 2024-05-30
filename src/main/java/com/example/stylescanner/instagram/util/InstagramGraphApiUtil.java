@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,7 +34,6 @@ public class InstagramGraphApiUtil {
     /**
      * INSTAGRAM GRAPH API 호출
      */
-
     public JSONObject GetAPIData(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -112,15 +112,19 @@ public class InstagramGraphApiUtil {
 
         List<FeedDto> feedDtoList = new ArrayList<>();
         String cursors_after = null;
+        String cursors_before = null;
         if(media.has("paging")){
             if(media.getJSONObject("paging").has("cursors")){
                 if(media.getJSONObject("paging").getJSONObject("cursors").has("after")){
                     cursors_after = media.getJSONObject("paging").getJSONObject("cursors").getString("after");
                 }
+                if(media.getJSONObject("paging").getJSONObject("cursors").has("before")){
+                    cursors_before = media.getJSONObject("paging").getJSONObject("cursors").getString("before");
+                }
             }
         }
 
-        feedDtoList.addAll(GetMediaData(data_list));
+        feedDtoList.addAll(GetMediaData(data_list,cursors_before));
         while(cursors_after != null){
             url_format = String.format( "?fields=business_discovery.username(%s){media.after(%s){media_type,media_url,id,timestamp}}&access_token=%s"
                     ,username,cursors_after,ACCESS_TOKEN);
@@ -136,17 +140,20 @@ public class InstagramGraphApiUtil {
                     if(media.getJSONObject("paging").getJSONObject("cursors").has("after")){
                         cursors_after = media.getJSONObject("paging").getJSONObject("cursors").getString("after");
                     }
+                    if(media.getJSONObject("paging").getJSONObject("cursors").has("before")){
+                        cursors_before = media.getJSONObject("paging").getJSONObject("cursors").getString("before");
+                    }
                 }
             }
 
-            feedDtoList.addAll(GetMediaData(data_list));
+            feedDtoList.addAll(GetMediaData(data_list,cursors_before));
         }
 
         return feedDtoList;
     }
 
 
-    public List<FeedDto> GetMediaData(JSONArray data_list){
+    public List<FeedDto> GetMediaData(JSONArray data_list, String before_cursor){
         List<FeedDto> feedDtoList = new ArrayList<>();
         for(int i=0; i<data_list.length(); i++) {
             JSONObject data = (JSONObject) data_list.get(i);
@@ -175,6 +182,8 @@ public class InstagramGraphApiUtil {
                 feedDto.setMedia_url_list(media_url);
                 feedDto.setTimestamp(timestamp);
                 feedDto.setMedia_id(id);
+                feedDto.setFeed_index(i+1);
+                feedDto.setBefore_cursor(before_cursor);
                 feedDtoList.add(feedDto);
             }
         }
@@ -240,5 +249,59 @@ public class InstagramGraphApiUtil {
         return  feedDtoList.stream()
                 .sorted(Comparator.comparing(FeedDto::getTimestamp).reversed())
                 .collect(Collectors.toList());
+    }
+
+    public FeedDto GetMedia(String username, String media_id, String before_cursors, int feed_index){
+        String url_format = "";
+        FeedDto feedDto = new FeedDto();
+
+        if(before_cursors == null){
+            url_format = String.format( "?fields=business_discovery.username(%s){media.limit(%d){media_type,media_url,children{media_url,media_type}}}&access_token=%s"
+                    ,username,feed_index,ACCESS_TOKEN);
+        }else{
+            url_format = String.format( "?fields=business_discovery.username(%s){media.limit(%d).after(%s){media_type,media_url,children{media_url,media_type}}}&access_token=%s"
+                    ,username,feed_index,before_cursors, ACCESS_TOKEN);
+        }
+
+        try {
+            URL url = new URL(API_URL +IG_USER_ID + url_format);
+
+            JSONObject obj = GetAPIData(url);
+            JSONArray data_list = obj.getJSONObject("business_discovery").getJSONObject("media").getJSONArray("data");
+
+            for(int i=0; i<data_list.length(); i++) {
+                JSONObject data = (JSONObject) data_list.get(i);
+                String media_type = data.getString("media_type");
+                String id = data.getString("id");
+
+                if(id.equals(media_id)){
+                    if(media_type.equals("IMAGE")||media_type.equals("CAROUSEL_ALBUM")) {
+                        //피드 사진
+                        List<String> media_url = new ArrayList<>();
+                        if(media_type.equals("IMAGE")){
+                            media_url.add(data.getString("media_url"));
+                        }else{
+                            if(data.has("children")){
+                                JSONArray children = data.getJSONObject("children").getJSONArray("data");
+                                for(int j=0; j<children.length(); j++) {
+                                    if(children.getJSONObject(j).getString("media_type").equals("IMAGE")){
+                                        media_url.add(children.getJSONObject(j).getString("media_url"));
+                                    }
+                                }
+                            }
+                        }
+                        //피드 미디어 ID
+                        feedDto.setUsername(username);
+                        feedDto.setMedia_url_list(media_url);
+                        feedDto.setMedia_id(id);
+                    }
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return feedDto;
     }
 }
