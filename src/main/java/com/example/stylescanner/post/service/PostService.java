@@ -2,6 +2,7 @@ package com.example.stylescanner.post.service;
 
 import com.example.stylescanner.error.StateResponse;
 import com.example.stylescanner.post.dto.PostCreateDto;
+import com.example.stylescanner.post.dto.PostUpdateDto;
 import com.example.stylescanner.post.entity.Post;
 import com.example.stylescanner.post.repository.PostRepository;
 import com.example.stylescanner.user.entity.User;
@@ -52,4 +53,22 @@ public class PostService {
         postRepository.delete(post);
         return ResponseEntity.ok(StateResponse.builder().code("SUCCESS").message("글을 성공적으로 삭제했습니다.").build());
     };
+
+    public List<Post> me(String currentUserEmail) {
+        User user = userRepository.findByEmail(currentUserEmail).orElseThrow(() -> new IllegalArgumentException("not found user"));
+
+        List<Post> listPost = postRepository.findAllByUser(user);
+
+        return listPost;
+    }
+
+    public ResponseEntity<StateResponse> update(Integer postId, PostUpdateDto updateDto) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("not found post"));
+
+        String content = updateDto.getContent();
+        post.setContent(content);
+        postRepository.save(post);
+
+        return ResponseEntity.ok(StateResponse.builder().code("SUCCESS").message("글을 성공적으로 수정했습니다.").build());
+    }
 }

@@ -3,6 +3,8 @@ package com.example.stylescanner.comment.controller;
 import com.example.stylescanner.comment.api.CommentApi;
 import com.example.stylescanner.comment.dto.CommentCreateDto;
 import com.example.stylescanner.comment.dto.CommentDto;
+import com.example.stylescanner.comment.dto.CommentUpdateDto;
+import com.example.stylescanner.comment.dto.MyCommentResponseDto;
 import com.example.stylescanner.comment.service.CommentService;
 import com.example.stylescanner.error.StateResponse;
 import com.example.stylescanner.jwt.provider.JwtProvider;
@@ -38,5 +40,18 @@ public class CommentController implements CommentApi {
     public ResponseEntity<StateResponse> delete(@PathVariable Integer commentId, HttpServletRequest request){
         String currentUserEmail = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
         return commentService.delete(commentId, currentUserEmail);
-    };
+    }
+
+    @Override
+    public List<MyCommentResponseDto> listMe(HttpServletRequest request) {
+        String currentUserEmail = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
+        return commentService.listMe(currentUserEmail);
+    }
+
+    @Override
+    public ResponseEntity<StateResponse> update(Integer commentId, CommentUpdateDto commentUpdateDto) {
+        return commentService.update(commentId, commentUpdateDto);
+    }
+
+
 }
