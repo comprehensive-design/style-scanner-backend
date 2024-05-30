@@ -93,7 +93,9 @@ public class FollowService {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-             celebProfileList.add(celebProfileResponseDto);
+            if(celebProfileResponseDto != null){
+                celebProfileList.add(celebProfileResponseDto);
+            }
         }
         responseDto.setFollowing_list(celebProfileList);
 
