@@ -5,6 +5,7 @@ import com.example.stylescanner.jwt.provider.JwtProvider;
 import com.example.stylescanner.post.api.PostApi;
 import com.example.stylescanner.post.dto.PostCreateDto;
 import com.example.stylescanner.post.dto.PostDto;
+import com.example.stylescanner.post.dto.PostUpdateDto;
 import com.example.stylescanner.post.entity.Post;
 import com.example.stylescanner.post.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +49,18 @@ public class PostController implements PostApi {
     public ResponseEntity<StateResponse> delete(@PathVariable Integer postId, HttpServletRequest request){
         String currentUserEmail = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
         return postService.delete(postId, currentUserEmail);
-    };
+    }
+
+    @Override
+    public List<Post> me(HttpServletRequest request) {
+        String currentUserEmail = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
+        return postService.me(currentUserEmail);
+    }
+
+    @Override
+    public ResponseEntity<StateResponse> update(Integer postId, PostUpdateDto postUpdateDto) {
+        return postService.update(postId, postUpdateDto);
+    }
+
 
 }

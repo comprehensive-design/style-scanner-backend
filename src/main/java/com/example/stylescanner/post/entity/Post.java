@@ -41,7 +41,7 @@ public class Post {
 
 
     @Builder
-    public Post(String feedUrl, String content, LocalDateTime createdAt, User user, List<Comment> comments) {
+    public Post(String feedUrl, String content, LocalDateTime createdAt, User user, List<Comment> comments, String celeb_id) {
         this.feedUrl = feedUrl;
         this.content = content;
         this.createdAt = createdAt;
