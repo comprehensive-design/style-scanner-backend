@@ -13,11 +13,11 @@ public class ItemService {
     private final ItemRepository itemRepository;
 
 
-    public List<Item> list() {
+    public List<Item> list(){
         return itemRepository.findAll();
     }
 
-    public Item read(Integer id) {
-        return itemRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 아이템이 없습니다. id= " + id));
+    public Item read(Integer id){
+        return itemRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 아이템이 없습니다. id= "+ id));
     }
 }
