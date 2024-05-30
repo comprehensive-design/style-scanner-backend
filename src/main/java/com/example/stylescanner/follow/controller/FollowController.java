@@ -3,6 +3,7 @@ package com.example.stylescanner.follow.controller;
 import com.example.stylescanner.follow.api.FollowApi;
 import com.example.stylescanner.follow.dto.FollowingListResponseDto;
 import com.example.stylescanner.follow.dto.FollowingRequestDto;
+import com.example.stylescanner.follow.dto.RecommendResponseDto;
 import com.example.stylescanner.follow.dto.UnFollowingRequestDto;
 import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.follow.service.FollowService;
@@ -60,5 +61,11 @@ public class FollowController implements FollowApi {
     public ResponseEntity<Boolean> checkFollowing(HttpServletRequest httpServletRequest, String keyword) {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(httpServletRequest).substring(7));
         return ResponseEntity.ok(followService.checkFollowing(email, keyword));
+    }
+
+    @Override
+    public List<RecommendResponseDto> recommend(HttpServletRequest httpServletRequest) {
+        String email = jwtProvider.getAccount(jwtProvider.resolveToken(httpServletRequest).substring(7));
+        return followService.recommend(email);
     }
 }
