@@ -1,10 +1,7 @@
 package com.example.stylescanner.follow.controller;
 
 import com.example.stylescanner.follow.api.FollowApi;
-import com.example.stylescanner.follow.dto.FollowingListResponseDto;
-import com.example.stylescanner.follow.dto.FollowingRequestDto;
-import com.example.stylescanner.follow.dto.RecommendResponseDto;
-import com.example.stylescanner.follow.dto.UnFollowingRequestDto;
+import com.example.stylescanner.follow.dto.*;
 import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.follow.service.FollowService;
 import com.example.stylescanner.instagram.dto.CelebProfileResponseDto;
@@ -67,5 +64,10 @@ public class FollowController implements FollowApi {
     public List<RecommendResponseDto> recommend(HttpServletRequest httpServletRequest) {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(httpServletRequest).substring(7));
         return followService.recommend(email);
+    }
+
+    @Override
+    public List<CelebRankingResponseDto> ranking() {
+        return followService.ranking();
     }
 }

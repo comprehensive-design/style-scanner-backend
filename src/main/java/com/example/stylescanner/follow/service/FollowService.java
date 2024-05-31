@@ -1,9 +1,6 @@
 package com.example.stylescanner.follow.service;
 
-import com.example.stylescanner.follow.dto.FollowingListResponseDto;
-import com.example.stylescanner.follow.dto.FollowingRequestDto;
-import com.example.stylescanner.follow.dto.RecommendResponseDto;
-import com.example.stylescanner.follow.dto.UnFollowingRequestDto;
+import com.example.stylescanner.follow.dto.*;
 import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.follow.repository.FollowRepository;
 import com.example.stylescanner.instagram.dto.CelebProfileResponseDto;
@@ -162,5 +159,11 @@ public class FollowService {
             cnt++;
         }
         return recommendedResponseDtoList;
+    }
+
+    public List<CelebRankingResponseDto> ranking() {
+        List<Object[]> celebRankingList = followRepository.findTopFollowedCelebrities();
+        List<CelebRankingResponseDto> celebRankingResponseDtoList = celebRankingList.stream().limit(5).map(result -> new CelebRankingResponseDto((CelebProfileResponseDto) search((String) result[0]), (Long) result[1])).collect(Collectors.toList());
+        return celebRankingResponseDtoList;
     }
 }
