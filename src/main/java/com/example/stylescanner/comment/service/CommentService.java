@@ -7,6 +7,8 @@ import com.example.stylescanner.comment.dto.MyCommentResponseDto;
 import com.example.stylescanner.comment.entity.Comment;
 import com.example.stylescanner.comment.repository.CommentRepository;
 import com.example.stylescanner.error.StateResponse;
+import com.example.stylescanner.notification.entity.Notification;
+import com.example.stylescanner.notification.repository.NotificationRepository;
 import com.example.stylescanner.post.entity.Post;
 import com.example.stylescanner.post.repository.PostRepository;
 import com.example.stylescanner.user.entity.User;
@@ -28,6 +30,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final NotificationRepository notificationRepository;
 
 
     public List<CommentDto> list(Integer postId){
@@ -47,6 +50,16 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
+
+        // 알림 생성 로직
+        Notification notification = Notification.builder()
+                .createdAt(LocalDateTime.now())
+                .receiver(post.getUser())
+                .comment(comment)
+                .build();
+
+        notificationRepository.save(notification);
+
         return ResponseEntity.ok(StateResponse.builder().code("SUCCESS").message("댓글을 성공적으로 생성했습니다.").build());
     }
 
