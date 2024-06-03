@@ -27,4 +27,10 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             "ORDER BY count DESC")
     List<Map<String, Object>> findRecommendedFolloweesWithCount(@Param("followeeIds") List<String> followeeIds, @Param("user") User user);
 
+
+    @Query("SELECT f.followeeId, COUNT(f.followeeId) AS followCount " +
+            "FROM Follow f " +
+            "GROUP BY f.followeeId " +
+            "ORDER BY followCount DESC")
+    List<Object[]> findTopFollowedCelebrities();
 }

@@ -1,9 +1,6 @@
 package com.example.stylescanner.follow.api;
 
-import com.example.stylescanner.follow.dto.FollowingListResponseDto;
-import com.example.stylescanner.follow.dto.FollowingRequestDto;
-import com.example.stylescanner.follow.dto.RecommendResponseDto;
-import com.example.stylescanner.follow.dto.UnFollowingRequestDto;
+import com.example.stylescanner.follow.dto.*;
 import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.instagram.dto.CelebProfileResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,5 +45,9 @@ public interface FollowApi {
     @GetMapping("/recommend")
     @Operation(summary = "셀럽 추천 메서드", description = "현재 사용자의 팔로잉 목록을 바탕으로 다른 셀럽 계정을 추천합니다.")
     List<RecommendResponseDto> recommend(HttpServletRequest httpServletRequest);
+
+    @GetMapping("/ranking")
+    @Operation(summary = "셀럽 랭킹 메서드", description = "현재 시스템에서 가장 많이 팔로잉된 순으로 셀럽 계정 목록을 반환합니다.")
+    List<CelebRankingResponseDto> ranking();
 
 }
