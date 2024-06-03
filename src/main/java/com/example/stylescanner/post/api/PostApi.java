@@ -34,7 +34,7 @@ public interface PostApi {
 
     @GetMapping("/me")
     @Operation(summary = "사용자 글 조회 메서드", description = "로그인한 사용자가 마이페이지에서 자신이 등록한 글을 확인하기 위한 메서드입니다.")
-    List<Post> me(HttpServletRequest request);
+    List<PostDto> me(HttpServletRequest request);
 
     @PostMapping("/update/{postId}")
     @Operation(summary = "사용자 글 수정 메서드", description = "로그인한 사용자가 마이페이지에서 자신이 등록한 글을 수정하기 위한 메서드입니다.")

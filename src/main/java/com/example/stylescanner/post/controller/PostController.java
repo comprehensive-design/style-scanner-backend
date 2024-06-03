@@ -52,9 +52,12 @@ public class PostController implements PostApi {
     }
 
     @Override
-    public List<Post> me(HttpServletRequest request) {
+    public List<PostDto> me(HttpServletRequest request) {
         String currentUserEmail = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
-        return postService.me(currentUserEmail);
+        List<Post> posts = postService.me(currentUserEmail);
+        return posts.stream()
+                .map(PostDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Override
