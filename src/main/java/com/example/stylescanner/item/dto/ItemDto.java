@@ -2,6 +2,7 @@ package com.example.stylescanner.item.dto;
 
 
 import com.example.stylescanner.comment.dto.CommentDto;
+import com.example.stylescanner.item.category.Category;
 import com.example.stylescanner.item.entity.Item;
 import com.example.stylescanner.itemLike.entity.ItemLike;
 import com.example.stylescanner.post.dto.PostDto;
@@ -32,6 +33,12 @@ public class ItemDto {
 
     private Integer likeCount;
 
+    private Category category;
+
+    private String itemOption;
+
+    private String brand;
+
 //    private boolean liked;
 
     public static ItemDto fromEntity(Item item) {
@@ -42,6 +49,9 @@ public class ItemDto {
                 .feedUrl(item.getFeedUrl())
                 .name(item.getName())
                 .price(item.getPrice())
+                .category(item.getCategory())
+                .itemOption(item.getItemOption())
+                .brand(item.getBrand())
                 .itemUrl(item.getItemUrl())
                 .likeCount(likes != null ? likes.size() : 0)
 //                .liked(isLiked)
