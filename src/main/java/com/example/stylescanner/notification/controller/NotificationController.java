@@ -1,11 +1,13 @@
 package com.example.stylescanner.notification.controller;
 
+import com.example.stylescanner.error.StateResponse;
 import com.example.stylescanner.jwt.provider.JwtProvider;
 import com.example.stylescanner.notification.api.NotificationApi;
 import com.example.stylescanner.notification.dto.NotificationDto;
 import com.example.stylescanner.notification.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -22,5 +24,16 @@ public class NotificationController implements NotificationApi {
     public List<NotificationDto> me(HttpServletRequest request) {
         String currentUserEmail = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
         return notificationService.me(currentUserEmail);
+    }
+
+    @Override
+    public ResponseEntity<StateResponse> delete(Integer notificationId) {
+        return notificationService.delete(notificationId);
+    }
+
+    @Override
+    public long count(HttpServletRequest request) {
+        String currentUserEmail = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
+        return notificationService.getUnreadNotificationCount(currentUserEmail);
     }
 }

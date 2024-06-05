@@ -64,6 +64,4 @@ public class PostController implements PostApi {
     public ResponseEntity<StateResponse> update(Integer postId, PostUpdateDto postUpdateDto) {
         return postService.update(postId, postUpdateDto);
     }
-
-
 }
