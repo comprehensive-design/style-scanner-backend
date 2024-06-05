@@ -1,6 +1,7 @@
 package com.example.stylescanner.item.entity;
 
 import com.example.stylescanner.comment.entity.Comment;
+import com.example.stylescanner.item.category.Category;
 import com.example.stylescanner.itemLike.entity.ItemLike;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -35,11 +36,24 @@ public class Item {
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<ItemLike> likes;
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Category category;
+
+    @Column
+    private String itemOption;
+
+    @Column
+    private String brand;
+
     @Builder
-    public Item(String feedUrl, String name, Integer price, String itemUrl) {
+    public Item(String feedUrl, String name, Integer price, String itemUrl, Category category, String itemOption, String brand) {
         this.feedUrl = feedUrl;
         this.name = name;
         this.price = price;
         this.itemUrl = itemUrl;
+        this.category = category;
+        this.itemOption = itemOption;
+        this.brand = brand;
     }
 }
