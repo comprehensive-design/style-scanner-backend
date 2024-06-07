@@ -308,7 +308,7 @@ public class InstagramGraphApiUtil {
     }
 
     public List<String> GetRecentCelebFeed(String username, int feed_cnt) throws IOException {
-        String url_format = String.format("?fields=business_discovery.username(%s){media.limit(%d){media_type,media_url,timestamp}}&access_token=%s"
+        String url_format = String.format("?fields=business_discovery.username(%s){media.limit(%d){media_type,media_url,thumbnail_url,timestamp}}&access_token=%s"
                 , username, feed_cnt, ACCESS_TOKEN);
         URL url = new URL(API_URL + IG_USER_ID + url_format);
 
@@ -318,7 +318,14 @@ public class InstagramGraphApiUtil {
         List<String> mediaList = new ArrayList<>();
 
         for (int i = 0; i < data_list.length(); i++) {
-            String media_url = data_list.getJSONObject(i).getString("media_url");
+            String media_url;
+            if(data_list.getJSONObject(i).getString("media_type").equals("VIDEO")){
+                media_url = data_list.getJSONObject(i).getString("thumbnail_url");
+            }else{
+                media_url = data_list.getJSONObject(i).getString("media_url");
+            }
+            System.out.println(media_url);
+
             mediaList.add(media_url);
         }
 
