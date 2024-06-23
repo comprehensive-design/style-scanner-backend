@@ -19,19 +19,18 @@ public class ItemController implements ItemApi {
     private final ItemService itemService;
 
     @Override
-    public List<ItemDto> list() {
-        List<Item> items = itemService.list();
+    public List<ItemDto> list(String category) {
+        List<Item> items = itemService.list(category);
         return items.stream()
                 .map(ItemDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ItemDto> ranking() {
-        List<Item> items = itemService.list();
+    public List<ItemDto> ranking(String category, int timeFilter) {
+        List<Item> items = itemService.ranking(category, timeFilter);
         return items.stream()
                 .map(ItemDto::fromEntity)
-                .sorted((dto1, dto2) -> Integer.compare(dto2.getLikeCount(), dto1.getLikeCount()))
                 .collect(Collectors.toList());
     }
 
