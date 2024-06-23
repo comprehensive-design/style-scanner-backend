@@ -165,7 +165,7 @@ public class FollowService {
         List<Object[]> celebRankingList = followRepository.findTopFollowedCelebrities();
         List<CelebRankingResponseDto> celebRankingResponseDtoList = celebRankingList.stream().limit(5).map(result -> {
             try {
-                return new CelebRankingResponseDto((CelebProfileResponseDto) search((String) result[0]), (Long) result[1], instagramGraphApiUtil.GetRecentCelebFeed((String) result[0], 1).toString());
+                return new CelebRankingResponseDto((CelebProfileResponseDto) search((String) result[0]),instagramGraphApiUtil.GetRecentCelebFeed((String) result[0], 1).toString());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
