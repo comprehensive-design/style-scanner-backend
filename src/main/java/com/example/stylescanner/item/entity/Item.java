@@ -33,6 +33,9 @@ public class Item {
     @Column(nullable = false)
     private String itemUrl;
 
+    @Column
+    private String shoppingLink;
+
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<ItemLike> likes;
 

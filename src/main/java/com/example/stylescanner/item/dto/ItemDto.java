@@ -31,6 +31,8 @@ public class ItemDto {
 
     private String itemUrl;
 
+    private String shoppingLink;
+
     private Integer likeCount;
 
     private Category category;
@@ -53,6 +55,7 @@ public class ItemDto {
                 .itemOption(item.getItemOption())
                 .brand(item.getBrand())
                 .itemUrl(item.getItemUrl())
+                .shoppingLink(item.getShoppingLink())
                 .likeCount(likes != null ? likes.size() : 0)
 //                .liked(isLiked)
                 .build();
