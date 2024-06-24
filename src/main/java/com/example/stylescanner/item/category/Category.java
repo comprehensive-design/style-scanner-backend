@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 
 @Getter
 public enum Category {
-    ROOT("전체", null),
-        FASHION_WOMEN("여성", ROOT),
+    ALL("전체", null),
+        FASHION_WOMEN("여성", ALL),
             WOMEN_OUTER("아우터", FASHION_WOMEN),
             WOMEN_TOP("상의", FASHION_WOMEN),
             WOMEN_PANTS("팬츠", FASHION_WOMEN),
@@ -19,7 +19,7 @@ public enum Category {
             WOMEN_BAG("가방", FASHION_WOMEN),
             WOMEN_ACC("악세사리", FASHION_WOMEN),
             WOMEN_ETC("기타", FASHION_WOMEN),
-        FASHION_MEN("남성", ROOT),
+        FASHION_MEN("남성", ALL),
             MEN_OUTER("아우터", FASHION_MEN),
             MEN_TOP("상의", FASHION_MEN),
             MEN_PANTS("팬츠", FASHION_MEN),
@@ -57,6 +57,15 @@ public enum Category {
     // 마지막 카테고리(상품추가 가능)인지 반환
     public boolean isLeafCategory() {
         return childCategories.isEmpty();
+    }
+
+    // 자식카테고리 재귀적으로 반환
+    public List<Category> getAllSubCategories() {
+        List<Category> subCategories = new ArrayList<>(childCategories);
+        for (Category child : childCategories) {
+            subCategories.addAll(child.getAllSubCategories());
+        }
+        return subCategories;
     }
 
     // 마지막 카테고리(상품추가 가능)들 반환
