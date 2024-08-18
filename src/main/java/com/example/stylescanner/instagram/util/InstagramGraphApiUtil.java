@@ -25,11 +25,21 @@ import java.util.stream.Collectors;
 public class InstagramGraphApiUtil {
     private String API_URL = "https://graph.facebook.com/v19.0/";
 
+
+    // 공식 API
     @Value("${instagram-graph-api.access-token}")
     private String ACCESS_TOKEN;
 
     @Value("${instagram-graph-api.ig-user-id}")
     private String IG_USER_ID;
+
+
+    //서드 파트 API
+    @Value("${rapid-instagram-api.host}")
+    private String HOST;
+
+    @Value(("${rapid-instagram-api.key}"))
+    private String KEY;
 
     /**
      * INSTAGRAM GRAPH API 호출
@@ -71,16 +81,57 @@ public class InstagramGraphApiUtil {
     }
 
     /**
-     * 셀럽 검색 : 존재하면 프로필 정보 리턴, 없으면 오류 메시지 리턴
+     *
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    public JSONObject GetAPIData_Rapid(URL url) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+
+        // RapidAPI 요청에 필요한 헤더 추가
+        conn.setRequestProperty("x-rapidapi-host", HOST);
+        conn.setRequestProperty("x-rapidapi-key", KEY);
+
+        int responseCode = conn.getResponseCode();
+
+        if (responseCode == 200) {
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+
+            return new JSONObject(sb.toString());
+        }else {
+            // 오류 응답이 있을 경우 로그로 출력
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+            System.err.println("Error response: " + sb.toString());
+        }
+        return null;
+    }
+
+
+    /**
+     * 셀럽 검색 : 존재하면 프로필 정보 리턴, 없으면 null 리턴
      */
     public CelebProfileResponseDto SearchCeleb(String celeb_id) throws IOException, JSONException {
         String url_format = String.format("?fields=business_discovery.username(%s){name,biography,follows_count,followers_count,profile_picture_url}&access_token=%s", celeb_id, ACCESS_TOKEN);
         URL url = new URL(API_URL + IG_USER_ID + url_format);
 
         JSONObject obj = GetAPIData(url);
-
         if (obj == null) {
-            return null;
+            System.out.println("Rapid API로 찾습니다 ");
+            CelebProfileResponseDto celebProfileResponseDto = SearchCeleb_Rapid(celeb_id);
+            return celebProfileResponseDto;
         }
 
         JSONObject businessDiscovery = obj.getJSONObject("business_discovery");
@@ -92,6 +143,27 @@ public class InstagramGraphApiUtil {
         if (businessDiscovery.has("biography")) {
             celebProfileResponseDto.setProfileBio(businessDiscovery.getString("biography"));
         }
+        return celebProfileResponseDto;
+    }
+
+    public CelebProfileResponseDto SearchCeleb_Rapid(String celeb_id) throws IOException {
+        String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1/info?username_or_id_or_url=%s",celeb_id);
+
+        URL url = new URL(url_format);
+        JSONObject obj = GetAPIData_Rapid(url);
+
+        if(obj == null) return null;
+
+        JSONObject data = obj.getJSONObject("data");
+
+        CelebProfileResponseDto celebProfileResponseDto = new CelebProfileResponseDto();
+        celebProfileResponseDto.setProfileName(celeb_id);
+        celebProfileResponseDto.setProfilePictureUrl(data.getString("profile_pic_url"));
+        celebProfileResponseDto.setProfileFollowerCount(data.getInt("follower_count"));
+        celebProfileResponseDto.setProfileFollowingCount(data.getInt("following_count"));
+        celebProfileResponseDto.setProfileBio(data.getString("biography"));
+        celebProfileResponseDto.setMediaCount(data.getInt("media_count"));
+
         return celebProfileResponseDto;
     }
 
