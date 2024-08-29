@@ -172,7 +172,7 @@ public class InstagramGraphApiUtil {
 
     /**
      * 셀럽의 모든 피드 반환
-     * (24.08.29 수정 : 모든 피드 -> 상위 12 피드만) => GetCelebInsta
+     * (24.08.29 수정 : 모든 피드 -> 상위 12 피드만) => GetCelebInsta 사용
      *
      * @param username
      * @return
@@ -230,7 +230,7 @@ public class InstagramGraphApiUtil {
     }
 
 
-    public List<FeedDto>GetCelebInsta(String username) throws IOException {
+    public List<FeedDto> GetCelebInsta(String username) throws IOException {
         String url_format = String.format("?fields=business_discovery.username(%s){media.limit(%d){media_type,thumbnail_url, media_url,id,timestamp}}&access_token=%s"
                 , username, 12, ACCESS_TOKEN);
         URL url = new URL(API_URL + IG_USER_ID + url_format);
@@ -568,25 +568,55 @@ public class InstagramGraphApiUtil {
         URL url = new URL(API_URL + IG_USER_ID + url_format);
 
         JSONObject obj = GetAPIData(url);
-        JSONArray data_list = obj.getJSONObject("business_discovery").getJSONObject("media").getJSONArray("data");
+
+        if(obj == null){
+
+            return GetRecentCelebFeed_Rapid(username, feed_cnt);
+        }else{
+
+            JSONArray data_list = obj.getJSONObject("business_discovery").getJSONObject("media").getJSONArray("data");
+
+            List<String> mediaList = new ArrayList<>();
+
+            for (int i = 0; i < data_list.length(); i++) {
+                String media_url;
+                if(data_list.getJSONObject(i).getString("media_type").equals("VIDEO")){
+                    media_url = data_list.getJSONObject(i).getString("thumbnail_url");
+                }else{
+                    media_url = data_list.getJSONObject(i).getString("media_url");
+                }
+                System.out.println(media_url);
+
+                mediaList.add(media_url);
+            }
+
+            return mediaList;
+        }
+
+    }
+
+
+    public List<String> GetRecentCelebFeed_Rapid(String username, int feed_cnt) throws IOException {
+
+        String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1.2/posts?username_or_id_or_url=%s",username);
+
+        URL url = new URL(url_format);
+        JSONObject obj = GetAPIData_Rapid(url);
+
+        if(obj == null) return null;
+
+        JSONObject data = obj.getJSONObject("data");
+        JSONArray items = data.getJSONArray("items");
+
 
         List<String> mediaList = new ArrayList<>();
 
-        for (int i = 0; i < data_list.length(); i++) {
-            String media_url;
-            if(data_list.getJSONObject(i).getString("media_type").equals("VIDEO")){
-                media_url = data_list.getJSONObject(i).getString("thumbnail_url");
-            }else{
-                media_url = data_list.getJSONObject(i).getString("media_url");
-            }
-            System.out.println(media_url);
-
-            mediaList.add(media_url);
+        for(int i = 0 ; i < feed_cnt; i++) {
+            JSONObject item = items.getJSONObject(i);
+            mediaList.add(item.getString("thumbnail_url"));
         }
 
         return mediaList;
     }
-
-
 
 }
