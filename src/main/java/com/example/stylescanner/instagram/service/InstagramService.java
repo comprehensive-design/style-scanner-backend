@@ -23,7 +23,7 @@ public class InstagramService {
         CelebInstaResponseDto celebInstaResponseDto = new CelebInstaResponseDto();
         try {
             CelebProfileResponseDto celebProfileResponseDto = instagramGraphApiUtil.SearchCeleb(username);
-            List<FeedDto> feedList = instagramGraphApiUtil.GetALlCelebFeed(username);
+            List<FeedDto> feedList = instagramGraphApiUtil.GetCelebInsta(username);
             celebProfileResponseDto.setMediaCount(feedList.size());
             celebInstaResponseDto.setProfile(celebProfileResponseDto);
             celebInstaResponseDto.setFeedList(feedList);

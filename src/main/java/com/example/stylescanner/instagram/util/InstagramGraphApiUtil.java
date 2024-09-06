@@ -14,7 +14,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,11 +28,21 @@ import java.util.stream.Collectors;
 public class InstagramGraphApiUtil {
     private String API_URL = "https://graph.facebook.com/v19.0/";
 
+
+    // 공식 API
     @Value("${instagram-graph-api.access-token}")
     private String ACCESS_TOKEN;
 
     @Value("${instagram-graph-api.ig-user-id}")
     private String IG_USER_ID;
+
+
+    //서드 파트 API
+    @Value("${rapid-instagram-api.host}")
+    private String HOST;
+
+    @Value(("${rapid-instagram-api.key}"))
+    private String KEY;
 
     /**
      * INSTAGRAM GRAPH API 호출
@@ -71,16 +84,57 @@ public class InstagramGraphApiUtil {
     }
 
     /**
-     * 셀럽 검색 : 존재하면 프로필 정보 리턴, 없으면 오류 메시지 리턴
+     *
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    public JSONObject GetAPIData_Rapid(URL url) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+
+        // RapidAPI 요청에 필요한 헤더 추가
+        conn.setRequestProperty("x-rapidapi-host", HOST);
+        conn.setRequestProperty("x-rapidapi-key", KEY);
+
+        int responseCode = conn.getResponseCode();
+
+        if (responseCode == 200) {
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+
+            return new JSONObject(sb.toString());
+        }else {
+            // 오류 응답이 있을 경우 로그로 출력
+            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+            System.err.println("Error response: " + sb.toString());
+        }
+        return null;
+    }
+
+
+    /**
+     * 셀럽 검색 : 존재하면 프로필 정보 리턴, 없으면 null 리턴
      */
     public CelebProfileResponseDto SearchCeleb(String celeb_id) throws IOException, JSONException {
         String url_format = String.format("?fields=business_discovery.username(%s){name,biography,follows_count,followers_count,profile_picture_url}&access_token=%s", celeb_id, ACCESS_TOKEN);
         URL url = new URL(API_URL + IG_USER_ID + url_format);
 
         JSONObject obj = GetAPIData(url);
-
         if (obj == null) {
-            return null;
+            System.out.println("Rapid API로 찾습니다 ");
+            CelebProfileResponseDto celebProfileResponseDto = SearchCeleb_Rapid(celeb_id);
+            return celebProfileResponseDto;
         }
 
         JSONObject businessDiscovery = obj.getJSONObject("business_discovery");
@@ -95,8 +149,30 @@ public class InstagramGraphApiUtil {
         return celebProfileResponseDto;
     }
 
+    public CelebProfileResponseDto SearchCeleb_Rapid(String celeb_id) throws IOException {
+        String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1/info?username_or_id_or_url=%s",celeb_id);
+
+        URL url = new URL(url_format);
+        JSONObject obj = GetAPIData_Rapid(url);
+
+        if(obj == null) return null;
+
+        JSONObject data = obj.getJSONObject("data");
+
+        CelebProfileResponseDto celebProfileResponseDto = new CelebProfileResponseDto();
+        celebProfileResponseDto.setProfileName(celeb_id);
+        celebProfileResponseDto.setProfilePictureUrl(data.getString("profile_pic_url"));
+        celebProfileResponseDto.setProfileFollowerCount(data.getInt("follower_count"));
+        celebProfileResponseDto.setProfileFollowingCount(data.getInt("following_count"));
+        celebProfileResponseDto.setProfileBio(data.getString("biography"));
+        celebProfileResponseDto.setMediaCount(data.getInt("media_count"));
+
+        return celebProfileResponseDto;
+    }
+
     /**
      * 셀럽의 모든 피드 반환
+     * (24.08.29 수정 : 모든 피드 -> 상위 12 피드만) => GetCelebInsta 사용
      *
      * @param username
      * @return
@@ -154,6 +230,94 @@ public class InstagramGraphApiUtil {
     }
 
 
+    public List<FeedDto> GetCelebInsta(String username) throws IOException {
+        String url_format = String.format("?fields=business_discovery.username(%s){media.limit(%d){media_type,thumbnail_url, media_url,id,timestamp}}&access_token=%s"
+                , username, 12, ACCESS_TOKEN);
+        URL url = new URL(API_URL + IG_USER_ID + url_format);
+
+        JSONObject obj = GetAPIData(url);
+
+        if(obj == null){
+            return GetCelebInsta_Rapid(username);
+        }else{
+            JSONObject media = obj.getJSONObject("business_discovery").getJSONObject("media");
+            JSONArray data_list = media.getJSONArray("data");
+
+            List<FeedDto> feedDtoList = new ArrayList<>();
+
+            for(int i=0; i<data_list.length(); i++) {
+                JSONObject data = data_list.getJSONObject(i);
+                String media_type = data.getString("media_type");
+                List<String> media_url = new ArrayList<>();
+
+                if(media_type.equals("VIDEO")){
+                    media_url.add(data_list.getJSONObject(i).getString("thumbnail_url"));
+                }else{
+                    media_url.add(data_list.getJSONObject(i).getString("media_url"));
+                }
+
+                // 피드 시간
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+                LocalDateTime timestamp = LocalDateTime.parse(data.getString("timestamp"), formatter);
+
+                //피드 미디어 ID
+                String id = data.getString("id");
+                FeedDto feedDto = new FeedDto();
+                feedDto.setMedia_url_list(media_url);
+                feedDto.setTimestamp(timestamp);
+                feedDto.setMedia_id(id);
+                feedDto.setFeed_index(i + 1);
+                feedDto.setBefore_cursor("");
+                feedDtoList.add(feedDto);
+            }
+
+            return feedDtoList;
+        }
+
+    }
+
+    public List<FeedDto> GetCelebInsta_Rapid(String username) throws IOException {
+        String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1.2/posts?username_or_id_or_url=%s",username);
+
+        URL url = new URL(url_format);
+        JSONObject obj = GetAPIData_Rapid(url);
+
+        if(obj == null) return null;
+
+        JSONObject data = obj.getJSONObject("data");
+        JSONArray items = data.getJSONArray("items");
+
+
+        List<FeedDto> feedDtoList = new ArrayList<>();
+
+        for(int i = 0 ; i < items.length(); i++) {
+            JSONObject item = items.getJSONObject(i);
+
+            // 피드 시간
+            long timestamp = item.getInt("taken_at");
+            Instant instant = Instant.ofEpochSecond(timestamp);
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+
+            List<String> media_url = new ArrayList<>();
+            String id = item.getString("id");
+
+            media_url.add(item.getString("thumbnail_url"));
+
+            //피드 미디어 ID
+            FeedDto feedDto = new FeedDto();
+            feedDto.setUsername(username);
+            feedDto.setMedia_url_list(media_url);
+            feedDto.setTimestamp(localDateTime);
+            feedDto.setMedia_id(id);
+            feedDto.setFeed_index(i + 1);
+            feedDto.setBefore_cursor("");
+            feedDtoList.add(feedDto);
+        }
+
+        return feedDtoList;
+    }
+
+
     public List<FeedDto> GetMediaData(JSONArray data_list, String before_cursor) {
         List<FeedDto> feedDtoList = new ArrayList<>();
         for (int i = 0; i < data_list.length(); i++) {
@@ -204,48 +368,121 @@ public class InstagramGraphApiUtil {
         URL url = new URL(API_URL + IG_USER_ID + url_format);
 
         JSONObject obj = GetAPIData(url);
-        JSONArray data_list = obj.getJSONObject("business_discovery").getJSONObject("media").getJSONArray("data");
+        if(obj == null){
+            return GetRecentCelebFeed_Rapid(username);
 
-        String profile_url = SearchCeleb(username).getProfilePictureUrl();
+        }else{
+            JSONArray data_list = obj.getJSONObject("business_discovery").getJSONObject("media").getJSONArray("data");
 
-        List<FeedDto> feedDtoList = new ArrayList<>();
+            String profile_url = SearchCeleb(username).getProfilePictureUrl();
 
-        for (int i = 0; i < data_list.length(); i++) {
-            JSONObject data = (JSONObject) data_list.get(i);
-            String media_type = data.getString("media_type");
+            List<FeedDto> feedDtoList = new ArrayList<>();
 
-            if (media_type.equals("IMAGE") || media_type.equals("CAROUSEL_ALBUM")) {
-                //피드 사진
-                List<String> media_url = new ArrayList<>();
-                if (media_type.equals("IMAGE")) {
-                    media_url.add(data.getString("media_url"));
-                } else {
-                    if (data.has("children")) {
-                        JSONArray children = data.getJSONObject("children").getJSONArray("data");
-                        for (int j = 0; j < children.length(); j++) {
-                            if (children.getJSONObject(j).getString("media_type").equals("IMAGE")) {
-                                media_url.add(children.getJSONObject(j).getString("media_url"));
+            for (int i = 0; i < data_list.length(); i++) {
+                JSONObject data = (JSONObject) data_list.get(i);
+                String media_type = data.getString("media_type");
+
+                if (media_type.equals("IMAGE") || media_type.equals("CAROUSEL_ALBUM")) {
+                    //피드 사진
+                    List<String> media_url = new ArrayList<>();
+                    if (media_type.equals("IMAGE")) {
+                        media_url.add(data.getString("media_url"));
+                    } else {
+                        if (data.has("children")) {
+                            JSONArray children = data.getJSONObject("children").getJSONArray("data");
+                            for (int j = 0; j < children.length(); j++) {
+                                if (children.getJSONObject(j).getString("media_type").equals("IMAGE")) {
+                                    media_url.add(children.getJSONObject(j).getString("media_url"));
+                                }
                             }
                         }
                     }
+
+                    // 피드 시간
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+                    LocalDateTime timestamp = LocalDateTime.parse(data.getString("timestamp"), formatter);
+
+                    //피드 미디어 ID
+                    String id = data.getString("id");
+
+                    FeedDto feedDto = new FeedDto();
+                    feedDto.setUsername(username);
+                    feedDto.setProfile_url(profile_url);
+                    feedDto.setMedia_url_list(media_url);
+                    feedDto.setTimestamp(timestamp);
+                    feedDto.setMedia_id(id);
+                    feedDtoList.add(feedDto);
                 }
 
+            }
+
+            return feedDtoList.stream()
+                    .sorted(Comparator.comparing(FeedDto::getTimestamp).reversed())
+                    .collect(Collectors.toList());
+        }
+
+
+    }
+
+    /**
+     * 서드파티 API를 활용한
+     * 한 셀럽의 가장 최근 피드 반환 메소드
+     * @param username
+     * @return
+     * @throws IOException
+     */
+    public List<FeedDto> GetRecentCelebFeed_Rapid(String username) throws IOException {
+        String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1.2/posts?username_or_id_or_url=%s",username);
+
+        URL url = new URL(url_format);
+        JSONObject obj = GetAPIData_Rapid(url);
+
+        if(obj == null) return null;
+
+        JSONObject data = obj.getJSONObject("data");
+        JSONArray items = data.getJSONArray("items");
+
+        String profile_url = data.getJSONObject("user").getString("profile_pic_url");
+
+        List<FeedDto> feedDtoList = new ArrayList<>();
+
+        for(int i = 0 ; i < items.length(); i++) {
+            JSONObject item = items.getJSONObject(i);
+
+
+            if(!item.getBoolean("is_video") && !item.getBoolean("is_pinned")){
+
                 // 피드 시간
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-                LocalDateTime timestamp = LocalDateTime.parse(data.getString("timestamp"), formatter);
+                long timestamp = item.getInt("taken_at");
+                Instant instant = Instant.ofEpochSecond(timestamp);
+                LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+
+
+                JSONArray media_list = item.getJSONArray("carousel_media");
+
+
+                List<String> media_url = new ArrayList<>();
+                String id = item.getString("id");
+
+                for(int j = 0 ; j < media_list.length(); j++) {
+                    if(media_list.getJSONObject(j).getBoolean("is_video")){
+                        continue;
+                    }
+
+                    media_url.add(media_list.getJSONObject(j).getString("thumbnail_url"));
+                }
 
                 //피드 미디어 ID
-                String id = data.getString("id");
-
                 FeedDto feedDto = new FeedDto();
                 feedDto.setUsername(username);
                 feedDto.setProfile_url(profile_url);
                 feedDto.setMedia_url_list(media_url);
-                feedDto.setTimestamp(timestamp);
+                feedDto.setTimestamp(localDateTime);
                 feedDto.setMedia_id(id);
                 feedDtoList.add(feedDto);
-            }
 
+                break;
+            }
         }
 
         return feedDtoList.stream()
@@ -253,6 +490,16 @@ public class InstagramGraphApiUtil {
                 .collect(Collectors.toList());
     }
 
+
+    /**
+     * 한 셀럽의 before_cursors 이후의 특정 피드 반환
+     *
+     * @param username
+     * @param media_id
+     * @param before_cursors
+     * @param feed_index
+     * @return
+     */
     public FeedDto GetMedia(String username, String media_id, String before_cursors, int feed_index) {
         String url_format = "";
         FeedDto feedDto = new FeedDto();
@@ -307,28 +554,69 @@ public class InstagramGraphApiUtil {
         return feedDto;
     }
 
+
+    /**
+     * 한 셀럽의 가장 최근 N개의 피드 섬네일 반환 메소드
+     * @param username
+     * @param feed_cnt
+     * @return
+     * @throws IOException
+     */
     public List<String> GetRecentCelebFeed(String username, int feed_cnt) throws IOException {
         String url_format = String.format("?fields=business_discovery.username(%s){media.limit(%d){media_type,media_url,thumbnail_url,timestamp}}&access_token=%s"
                 , username, feed_cnt, ACCESS_TOKEN);
         URL url = new URL(API_URL + IG_USER_ID + url_format);
 
         JSONObject obj = GetAPIData(url);
-        JSONArray data_list = obj.getJSONObject("business_discovery").getJSONObject("media").getJSONArray("data");
+
+        if(obj == null){
+
+            return GetRecentCelebFeed_Rapid(username, feed_cnt);
+        }else{
+
+            JSONArray data_list = obj.getJSONObject("business_discovery").getJSONObject("media").getJSONArray("data");
+
+            List<String> mediaList = new ArrayList<>();
+
+            for (int i = 0; i < data_list.length(); i++) {
+                String media_url;
+                if(data_list.getJSONObject(i).getString("media_type").equals("VIDEO")){
+                    media_url = data_list.getJSONObject(i).getString("thumbnail_url");
+                }else{
+                    media_url = data_list.getJSONObject(i).getString("media_url");
+                }
+                System.out.println(media_url);
+
+                mediaList.add(media_url);
+            }
+
+            return mediaList;
+        }
+
+    }
+
+
+    public List<String> GetRecentCelebFeed_Rapid(String username, int feed_cnt) throws IOException {
+
+        String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1.2/posts?username_or_id_or_url=%s",username);
+
+        URL url = new URL(url_format);
+        JSONObject obj = GetAPIData_Rapid(url);
+
+        if(obj == null) return null;
+
+        JSONObject data = obj.getJSONObject("data");
+        JSONArray items = data.getJSONArray("items");
+
 
         List<String> mediaList = new ArrayList<>();
 
-        for (int i = 0; i < data_list.length(); i++) {
-            String media_url;
-            if(data_list.getJSONObject(i).getString("media_type").equals("VIDEO")){
-                media_url = data_list.getJSONObject(i).getString("thumbnail_url");
-            }else{
-                media_url = data_list.getJSONObject(i).getString("media_url");
-            }
-            System.out.println(media_url);
-
-            mediaList.add(media_url);
+        for(int i = 0 ; i < feed_cnt; i++) {
+            JSONObject item = items.getJSONObject(i);
+            mediaList.add(item.getString("thumbnail_url"));
         }
 
         return mediaList;
     }
+
 }
