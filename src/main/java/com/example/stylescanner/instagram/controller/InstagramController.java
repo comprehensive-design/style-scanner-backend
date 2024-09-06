@@ -1,5 +1,7 @@
 package com.example.stylescanner.instagram.controller;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.stylescanner.follow.dto.FollowingListResponseDto;
 import com.example.stylescanner.follow.service.FollowService;
 import com.example.stylescanner.instagram.api.InstagramApi;
@@ -11,7 +13,12 @@ import com.example.stylescanner.instagram.service.InstagramService;
 import com.example.stylescanner.jwt.provider.JwtProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,6 +26,12 @@ public class InstagramController implements InstagramApi {
     private final InstagramService instagramService;
     private final FollowService followService;
     private final JwtProvider jwtProvider;
+
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String buketName;
+
+    private final AmazonS3 amazonS3;
 
     @Override
     public CelebInstaResponseDto readCelebInsta(String username) {
@@ -35,5 +48,27 @@ public class InstagramController implements InstagramApi {
     @Override
     public FeedDto getFeed(FeedRequestDto feedRequestDto) {
         return instagramService.readFeed(feedRequestDto);
+    }
+
+    @Override
+    public String uploadSearchImg(MultipartFile searchImgFile) {
+
+        String originalFilename = searchImgFile.getOriginalFilename();
+        String fileExtension = "";
+        if (originalFilename != null && !originalFilename.isEmpty()) {
+            fileExtension = "." + originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+        }
+
+        String uniqueFilename = "searchImage/"+UUID.randomUUID() + fileExtension;
+        String fileUrl = "https://" + buketName + ".s3.amazonaws.com/" + uniqueFilename;
+
+        try {
+            amazonS3.putObject(new PutObjectRequest(buketName,uniqueFilename,searchImgFile.getInputStream(),null));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload file to S3");
+        }
+
+        System.out.println(fileUrl);
+        return fileUrl;
     }
 }

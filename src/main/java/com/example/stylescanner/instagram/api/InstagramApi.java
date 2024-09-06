@@ -7,10 +7,8 @@ import com.example.stylescanner.instagram.dto.HomeFeedResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequestMapping("/api/insta")
 @Tag(name="Insta", description = "인스타그램 정보 관련 API")
@@ -26,4 +24,8 @@ public interface InstagramApi {
     @GetMapping("/feed")
     @Operation(summary = "셀럽 계정 속 특정 피드 요청 메서드", description = "선택한 피드의 인덱스값과 미디어 아이디를 넘겨주면 해당 피드의 하위 피드를 가져옵니다.")
     FeedDto getFeed(@RequestBody FeedRequestDto feedRequestDto);
+
+    @PostMapping("/uploadSearchImg")
+    @Operation(summary = "검색용 이미지 업로드 메서드", description = "사용자가 원하는 셀럽 계정이 검색되지 않거나 따로 이미지 검색이 필요할때 검색용 이미지를 서버에 등록하고 url을 반환합니다. ")
+    String uploadSearchImg( @RequestPart(value="SearchImgFile")  MultipartFile searchImgFile);
 }
