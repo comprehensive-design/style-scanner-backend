@@ -16,4 +16,5 @@ public class HomeFeedResponseDto {
     String profile_url;
     String thumbnail_url;
     String feed_code;
+    int carousel_count;
 }
