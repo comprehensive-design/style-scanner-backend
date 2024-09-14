@@ -36,31 +36,6 @@ public class InstagramService {
         return celebInstaResponseDto;
     }
 
-//    public HomeFeedResponseDto readHomeFeed(FollowingListResponseDto followingList) {
-//        HomeFeedResponseDto homeFeedResponseDto = new HomeFeedResponseDto();
-//
-//        List<FeedDto> AllFeedList = new ArrayList<>();
-//
-//        for(CelebProfileResponseDto celeb : followingList.getFollowing_list()){
-//            String username = celeb.getProfileName();
-//            try {
-//                List<FeedDto> feedList = instagramGraphApiUtil.GetRecentCelebFeed(username);
-//                AllFeedList.addAll(feedList);
-//            } catch (IOException e) {
-//                return null;
-//            }
-//        }
-//
-//        List<FeedDto> sort_AllFeedList =  AllFeedList.stream()
-//                .sorted(Comparator.comparing(FeedDto::getTimestamp).reversed())
-//                .collect(Collectors.toList());
-//
-//        homeFeedResponseDto.setFeeds(sort_AllFeedList);
-//
-//        return homeFeedResponseDto;
-//    }
-
-
     public  List<HomeFeedResponseDto> readHomeFeed(Page<Follow> paging) throws IOException {
         List<String> followingList = paging.getContent().stream()
                 .map(Follow::getFolloweeId)
@@ -72,10 +47,11 @@ public class InstagramService {
             dto.setUsername(followeeId);
             dto.setProfile_url(instagramGraphApiUtil.SearchCeleb(followeeId).getProfilePictureUrl());
 
-            FeedDto feedDto = instagramGraphApiUtil.GetRecentCelebFeed_Rapid(followeeId);
+            HomeFeedResponseDto feedDto = instagramGraphApiUtil.GetRecentCelebFeed_Rapid(followeeId);
 
-            dto.setThumbnail_url(feedDto.getMedia_url_list().get(0));
-            dto.setFeed_code(feedDto.getMedia_id());
+            dto.setThumbnail_url(feedDto.getThumbnail_url());
+            dto.setFeed_code(feedDto.getFeed_code());
+            dto.setCarousel_count(feedDto.getCarousel_count());
 
             responseDtos.add(dto);
         }
