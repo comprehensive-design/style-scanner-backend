@@ -2,6 +2,8 @@ package com.example.stylescanner.follow.repository;
 
 import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,4 +35,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             "GROUP BY f.followeeId " +
             "ORDER BY followCount DESC")
     List<Object[]> findTopFollowedCelebrities();
+
+    //paging 추가
+    Page<Follow> findAllByUser(Optional<User> user, Pageable pageable);
 }

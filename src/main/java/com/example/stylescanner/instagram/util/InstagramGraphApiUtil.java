@@ -2,6 +2,7 @@ package com.example.stylescanner.instagram.util;
 
 import com.example.stylescanner.instagram.dto.CelebProfileResponseDto;
 import com.example.stylescanner.instagram.dto.FeedDto;
+import com.example.stylescanner.instagram.dto.RecentFeedDto;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -369,7 +370,9 @@ public class InstagramGraphApiUtil {
 
         JSONObject obj = GetAPIData(url);
         if(obj == null){
-            return GetRecentCelebFeed_Rapid(username);
+            List<FeedDto> feedDtoList = new ArrayList<>();
+            feedDtoList.add(GetRecentCelebFeed_Rapid(username));
+            return feedDtoList;
 
         }else{
             JSONArray data_list = obj.getJSONObject("business_discovery").getJSONObject("media").getJSONArray("data");
@@ -431,7 +434,7 @@ public class InstagramGraphApiUtil {
      * @return
      * @throws IOException
      */
-    public List<FeedDto> GetRecentCelebFeed_Rapid(String username) throws IOException {
+    public FeedDto GetRecentCelebFeed_Rapid(String username) throws IOException {
         String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1.2/posts?username_or_id_or_url=%s",username);
 
         URL url = new URL(url_format);
@@ -444,11 +447,10 @@ public class InstagramGraphApiUtil {
 
         String profile_url = data.getJSONObject("user").getString("profile_pic_url");
 
-        List<FeedDto> feedDtoList = new ArrayList<>();
+        FeedDto feedDto = new FeedDto();
 
         for(int i = 0 ; i < items.length(); i++) {
             JSONObject item = items.getJSONObject(i);
-
 
             if(!item.getBoolean("is_video") && !item.getBoolean("is_pinned")){
 
@@ -462,7 +464,8 @@ public class InstagramGraphApiUtil {
 
 
                 List<String> media_url = new ArrayList<>();
-                String id = item.getString("id");
+                //String id = item.getString("id");
+                String id = item.getString("code");
 
                 for(int j = 0 ; j < media_list.length(); j++) {
                     if(media_list.getJSONObject(j).getBoolean("is_video")){
@@ -473,22 +476,19 @@ public class InstagramGraphApiUtil {
                 }
 
                 //피드 미디어 ID
-                FeedDto feedDto = new FeedDto();
                 feedDto.setUsername(username);
                 feedDto.setProfile_url(profile_url);
                 feedDto.setMedia_url_list(media_url);
                 feedDto.setTimestamp(localDateTime);
                 feedDto.setMedia_id(id);
-                feedDtoList.add(feedDto);
 
                 break;
             }
         }
 
-        return feedDtoList.stream()
-                .sorted(Comparator.comparing(FeedDto::getTimestamp).reversed())
-                .collect(Collectors.toList());
+        return feedDto;
     }
+
 
 
     /**
@@ -614,6 +614,32 @@ public class InstagramGraphApiUtil {
         for(int i = 0 ; i < feed_cnt; i++) {
             JSONObject item = items.getJSONObject(i);
             mediaList.add(item.getString("thumbnail_url"));
+        }
+
+        return mediaList;
+    }
+
+    /*
+     피드 검색은 오직 Rapid 만 사용함 -> 공식 API로는 찾을수 없음
+     */
+    public List<String> GetCarouselMedia(String feed_code) throws IOException {
+        String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1/post_info?code_or_id_or_url=%s&include_insights=true",feed_code);
+
+        URL url = new URL(url_format);
+        JSONObject obj = GetAPIData_Rapid(url);
+
+        if(obj == null) return null;
+
+        JSONObject data = obj.getJSONObject("data");
+        JSONArray carousel_media = data.getJSONArray("carousel_media");
+
+        List<String> mediaList = new ArrayList<>();
+
+        for(int i = 0 ; i < carousel_media.length(); i++) {
+            JSONObject media = carousel_media.getJSONObject(i);
+            if(!media.getBoolean("is_video")){
+                mediaList.add(media.getJSONObject("image_versions").getJSONArray("items").getJSONObject(0).getString("url"));
+            }
         }
 
         return mediaList;

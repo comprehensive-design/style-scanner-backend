@@ -14,7 +14,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+
 
 @Service
 public class FollowService {
@@ -172,4 +178,13 @@ public class FollowService {
         }).collect(Collectors.toList());
         return celebRankingResponseDtoList;
     }
+
+    //페이징 처리 : 현재 page에 해당하는 팔로잉 리스트만 보여준다. 페이지 크기는 size 기준
+    public Page<Follow> followingListPaging(String email, int page, int size){
+        Pageable pageable = PageRequest.of(page,size);
+        Optional<User> user = userRepository.findByEmail(email);
+
+        return this.followRepository.findAllByUser(user, pageable);
+    }
+
 }
