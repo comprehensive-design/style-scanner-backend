@@ -16,8 +16,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -89,5 +94,21 @@ public class InstagramController implements InstagramApi {
 
         System.out.println(fileUrl);
         return fileUrl;
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getInstagramImage(String imageUrl) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            // 서드파티 API에서 받은 이미지 URL로 요청
+            byte[] imageBytes = restTemplate.getForObject(imageUrl, byte[].class);
+
+            // 이미지 데이터를 클라이언트에 반환
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG); // 이미지 형식에 맞게 설정
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 예외 처리
+        }
     }
 }

@@ -7,6 +7,7 @@ import com.example.stylescanner.instagram.dto.HomeFeedResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,4 +39,8 @@ public interface InstagramApi {
     @PostMapping("/uploadSearchImg")
     @Operation(summary = "검색용 이미지 업로드 메서드", description = "사용자가 원하는 셀럽 계정이 검색되지 않거나 따로 이미지 검색이 필요할때 검색용 이미지를 서버에 등록하고 url을 반환합니다. ")
     String uploadSearchImg( @RequestPart(value="SearchImgFile")  MultipartFile searchImgFile);
+
+    @GetMapping("/proxyImage")
+    @Operation(summary = "인스타 이미지 URL을 이미지 파일(byte[])로 반환해줍니다.")
+    ResponseEntity<byte[]> getInstagramImage(@RequestParam String imageUrl);
 }
