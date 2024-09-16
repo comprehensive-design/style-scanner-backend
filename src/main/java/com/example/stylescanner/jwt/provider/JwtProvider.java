@@ -54,9 +54,12 @@ public class JwtProvider {
     }
 
     public String generateRefreshToken(String account) {
+        Claims claims = Jwts.claims().setSubject(account);
         Date now = new Date();
 
         return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + refreshExp))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
@@ -151,9 +154,14 @@ public class JwtProvider {
      * @param refreshToken
      * @return
      */
-    public String reissueToken(String refreshToken) {
+    public JwtDto reissueToken(String refreshToken) {
         String email = getAccount(refreshToken);
-        return generateAccessToken(email);
+        JwtDto jwtDto = JwtDto.builder().accessToken(generateAccessToken(email))
+                .refreshToken(generateRefreshToken(email))
+                .grantType("Bearer")
+                .build();
+
+        return jwtDto;
     }
 
 }
