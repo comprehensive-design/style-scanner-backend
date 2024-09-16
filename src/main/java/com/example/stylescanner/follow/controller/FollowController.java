@@ -54,6 +54,7 @@ public class FollowController implements FollowApi {
     public ResponseEntity<FollowingListResponseDto> followingListPaging(HttpServletRequest httpServletRequest, int page, int size) throws IOException {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(httpServletRequest).substring(7));
 
+
         Page<Follow> follows = followService.followingListPaging(email,page,size);
 
         FollowingListResponseDto followingListResponseDto = followService.followingListPaging(follows);
