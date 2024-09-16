@@ -108,6 +108,24 @@ public class FollowService {
         return responseDto;
     }
 
+    public FollowingListResponseDto followingListPaging(Page<Follow> follows) throws IOException {
+        FollowingListResponseDto responseDto = new FollowingListResponseDto();
+        List<CelebProfileResponseDto> following_list = new ArrayList<>();
+
+        for (Follow follow : follows) {
+
+            String followeeId = follow.getFolloweeId();
+            CelebProfileResponseDto celebProfileResponseDto = instagramGraphApiUtil.SearchCeleb(followeeId);
+
+            if(celebProfileResponseDto != null){
+                following_list.add(celebProfileResponseDto);
+            }
+        }
+
+        responseDto.setFollowing_list(following_list);
+        return responseDto;
+    }
+
     public Boolean unfollow(String email, UnFollowingRequestDto requestDto) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("not found user"));
 
