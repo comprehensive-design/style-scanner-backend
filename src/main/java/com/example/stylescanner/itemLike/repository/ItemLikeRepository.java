@@ -17,6 +17,6 @@ public interface ItemLikeRepository extends JpaRepository<ItemLike, Integer> {
     @Query("SELECT il.item FROM ItemLike il GROUP BY il.item ORDER BY COUNT(il) DESC")
     List<Item> findAllItemsOrderByLikeCount();
 
-    @Query("SELECT il.item.id, COUNT(il) FROM ItemLike il WHERE il.createdAt >= :startDate AND il.createdAt <= :endDate GROUP BY il.item.id")
+    @Query("SELECT il.item.id, COUNT(il) FROM ItemLike il WHERE il.createdAt >= :startDate AND il.createdAt <= :endDate GROUP BY il.item.id ORDER BY 2 DESC LIMIT 100")
     List<Object[]> findItemLikeCountsBetweenDates(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }
