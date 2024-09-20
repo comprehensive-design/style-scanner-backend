@@ -114,7 +114,7 @@ public class InstagramController implements InstagramApi {
     }
 
     @Override
-    public String getImageUrl(String feedCode) throws IOException {
-        return instagramService.getImageUrl(feedCode);
+    public ResponseEntity<byte[]> getImage(String feedCode) throws IOException {
+        return this.getInstagramImage(instagramService.getImageUrl(feedCode));
     }
 }

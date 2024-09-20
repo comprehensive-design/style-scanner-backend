@@ -5,6 +5,7 @@ import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.instagram.dto.*;
 import com.example.stylescanner.instagram.util.InstagramGraphApiUtil;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

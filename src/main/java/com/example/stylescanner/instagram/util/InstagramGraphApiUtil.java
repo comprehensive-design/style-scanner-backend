@@ -5,6 +5,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -573,8 +574,9 @@ public class InstagramGraphApiUtil {
         if(obj == null) return null;
 
         JSONObject data = obj.getJSONObject("data");
+        String image_url =  data.getJSONObject("image_versions").getJSONArray("items").getJSONObject(0).getString("url");
 
-        return data.getJSONObject("image_versions").getJSONArray("items").getJSONObject(0).getString("url");
+        return image_url;
     }
 
 }
