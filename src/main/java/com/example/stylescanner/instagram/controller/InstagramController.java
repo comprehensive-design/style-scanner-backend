@@ -6,12 +6,11 @@ import com.example.stylescanner.follow.dto.FollowingListResponseDto;
 import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.follow.service.FollowService;
 import com.example.stylescanner.instagram.api.InstagramApi;
-import com.example.stylescanner.instagram.dto.CelebInstaResponseDto;
-import com.example.stylescanner.instagram.dto.FeedDto;
-import com.example.stylescanner.instagram.dto.FeedRequestDto;
-import com.example.stylescanner.instagram.dto.HomeFeedResponseDto;
+import com.example.stylescanner.instagram.dto.*;
 import com.example.stylescanner.instagram.service.InstagramService;
 import com.example.stylescanner.jwt.provider.JwtProvider;
+import com.example.stylescanner.user.entity.User;
+import com.example.stylescanner.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,6 +36,7 @@ public class InstagramController implements InstagramApi {
     private final InstagramService instagramService;
     private final FollowService followService;
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
 
 
     @Value("${cloud.aws.s3.bucket}")
@@ -48,20 +49,20 @@ public class InstagramController implements InstagramApi {
         return instagramService.readCelebInsta(username);
     }
 
-//    @Override
-//    public HomeFeedResponseDto getHomeFeed(HttpServletRequest request) {
-//        String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
-//        FollowingListResponseDto followingList =  followService.followingList(email);
-//        return instagramService.readHomeFeed(followingList);
-//    }
 
     @Override
-    public List<HomeFeedResponseDto> getHomeFeed(HttpServletRequest request, @RequestParam int page, @RequestParam int size) throws IOException {
+    public HomeFeedDto getHomeFeed(HttpServletRequest request, @RequestParam int page, @RequestParam int size) throws IOException {
         String email = jwtProvider.getAccount(jwtProvider.resolveToken(request).substring(7));
+        Optional<User> user = userRepository.findByEmail(email);
 
         Page<Follow> paging = followService.followingListPaging(email,page,size);
 
-        return instagramService.readHomeFeed(paging);
+        List<HomeFeedResponseDto> homeFeedResponseDtoList = instagramService.readHomeFeed(paging);
+        HomeFeedDto homeFeedDto = new HomeFeedDto();
+
+        homeFeedDto.setHomeFeedResponseDtoList(homeFeedResponseDtoList);
+        homeFeedDto.setTotal_count(followService.getFollowCountByUser(user));
+        return homeFeedDto;
     }
 
     @Override

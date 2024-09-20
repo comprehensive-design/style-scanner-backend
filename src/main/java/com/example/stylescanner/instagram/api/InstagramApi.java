@@ -1,9 +1,6 @@
 package com.example.stylescanner.instagram.api;
 
-import com.example.stylescanner.instagram.dto.CelebInstaResponseDto;
-import com.example.stylescanner.instagram.dto.FeedDto;
-import com.example.stylescanner.instagram.dto.FeedRequestDto;
-import com.example.stylescanner.instagram.dto.HomeFeedResponseDto;
+import com.example.stylescanner.instagram.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,9 +20,9 @@ public interface InstagramApi {
 
     @GetMapping("/home")
     @Operation(summary="홈 화면 속 피드 리스트 요청 메서드", description = "사용자가 팔로잉 하고있는 셀럽의 가장 최근 피드를 가져옵니다.")
-    List<HomeFeedResponseDto> getHomeFeed(HttpServletRequest request,
-                                    @RequestParam(defaultValue = "0") int page,
-                                    @RequestParam(defaultValue = "9") int size
+    HomeFeedDto getHomeFeed(HttpServletRequest request,
+                            @RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "9") int size
                                     ) throws IOException;
 
     @GetMapping("/feed")

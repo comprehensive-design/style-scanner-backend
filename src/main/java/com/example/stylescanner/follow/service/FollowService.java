@@ -210,4 +210,9 @@ public class FollowService {
         return this.followRepository.findAllByUser(user, pageable);
     }
 
+    //팔로잉한 셀럽 수만 반환
+    public int getFollowCountByUser(Optional<User> user){
+        return followRepository.countByUser(user);
+    }
+
 }

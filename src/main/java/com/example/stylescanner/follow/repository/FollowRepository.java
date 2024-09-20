@@ -38,4 +38,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     //paging 추가
     Page<Follow> findAllByUser(Optional<User> user, Pageable pageable);
+
+    //팔로잉 하고 있는 셀럽 수만 반환하는 메소드 추가
+    int countByUser(@Param("user") Optional<User> user);
 }
