@@ -1,9 +1,6 @@
 package com.example.stylescanner.instagram.util;
 
-import com.example.stylescanner.instagram.dto.CelebProfileResponseDto;
-import com.example.stylescanner.instagram.dto.FeedDto;
-import com.example.stylescanner.instagram.dto.HomeFeedResponseDto;
-import com.example.stylescanner.instagram.dto.RecentFeedDto;
+import com.example.stylescanner.instagram.dto.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +36,7 @@ public class InstagramGraphApiUtil {
     private String IG_USER_ID;
 
 
-    //서드 파트 API
+    //서드 파티 API
     @Value("${rapid-instagram-api.host}")
     private String HOST;
 
@@ -539,7 +536,7 @@ public class InstagramGraphApiUtil {
     /*
      피드 검색은 오직 Rapid 만 사용함 -> 공식 API로는 찾을수 없음
      */
-    public List<String> GetCarouselMedia(String feed_code) throws IOException {
+    public List<CarouselMediaDto> GetCarouselMedia(String feed_code) throws IOException {
         String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1/post_info?code_or_id_or_url=%s&include_insights=true",feed_code);
 
         URL url = new URL(url_format);
@@ -550,16 +547,34 @@ public class InstagramGraphApiUtil {
         JSONObject data = obj.getJSONObject("data");
         JSONArray carousel_media = data.getJSONArray("carousel_media");
 
-        List<String> mediaList = new ArrayList<>();
-
+        List<CarouselMediaDto> carouselMediaDtoList = new ArrayList<>();
         for(int i = 0 ; i < carousel_media.length(); i++) {
             JSONObject media = carousel_media.getJSONObject(i);
             if(!media.getBoolean("is_video")){
-                mediaList.add(media.getJSONObject("image_versions").getJSONArray("items").getJSONObject(0).getString("url"));
+                CarouselMediaDto dto = new CarouselMediaDto();
+                dto.setFeed_url(media.getJSONObject("image_versions").getJSONArray("items").getJSONObject(0).getString("url"));
+
+                String feedCode = media.getString("code");
+                dto.setFeedCode(feedCode);
+
+                carouselMediaDtoList.add(dto);
             }
         }
 
-        return mediaList;
+        return carouselMediaDtoList;
+    }
+
+    public String GetImageUrl(String feed_code) throws IOException {
+        String url_format = String.format("https://instagram-scraper-api2.p.rapidapi.com/v1/post_info?code_or_id_or_url=%s&include_insights=true",feed_code);
+
+        URL url = new URL(url_format);
+        JSONObject obj = GetAPIData_Rapid(url);
+
+        if(obj == null) return null;
+
+        JSONObject data = obj.getJSONObject("data");
+
+        return data.getJSONObject("image_versions").getJSONArray("items").getJSONObject(0).getString("url");
     }
 
 }

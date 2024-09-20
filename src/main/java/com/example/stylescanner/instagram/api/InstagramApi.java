@@ -31,7 +31,7 @@ public interface InstagramApi {
 
     @GetMapping("/getCarouselMedia")
     @Operation(summary = "feed_code 로 해당 피드의 하위 미디어들을 가져옵니다. ")
-    List<String> getCarouselMedia(@RequestParam String feed_code) throws IOException;
+    List<CarouselMediaDto> getCarouselMedia(@RequestParam String feed_code) throws IOException;
 
     @PostMapping("/uploadSearchImg")
     @Operation(summary = "검색용 이미지 업로드 메서드", description = "사용자가 원하는 셀럽 계정이 검색되지 않거나 따로 이미지 검색이 필요할때 검색용 이미지를 서버에 등록하고 url을 반환합니다. ")
@@ -40,4 +40,8 @@ public interface InstagramApi {
     @GetMapping("/proxyImage")
     @Operation(summary = "인스타 이미지 URL을 이미지 파일(byte[])로 반환해줍니다.")
     ResponseEntity<byte[]> getInstagramImage(@RequestParam String imageUrl);
+
+    @GetMapping("/getImageUrl")
+    @Operation(summary = "feedCode로 해당 피드 이미지 url을 찾아서 반환합니다. ", description = "커뮤니티 게시글 작성시, 질문할 피드 이미지의 feedCode는 /home -> /getCarouselMedia 를 거쳐서 얻을수 있고 이를 params에 넣어 호출합니다.  ")
+    String getImageUrl(@RequestParam String feedCode) throws IOException;
 }

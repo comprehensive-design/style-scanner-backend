@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 public class HomeFeedDto {
-    List<HomeFeedResponseDto> homeFeedResponseDtoList;
+    List<HomeFeedResponseDto> homeFeedList;
     int total_count;
 }

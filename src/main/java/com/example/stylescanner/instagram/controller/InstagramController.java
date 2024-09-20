@@ -60,7 +60,7 @@ public class InstagramController implements InstagramApi {
         List<HomeFeedResponseDto> homeFeedResponseDtoList = instagramService.readHomeFeed(paging);
         HomeFeedDto homeFeedDto = new HomeFeedDto();
 
-        homeFeedDto.setHomeFeedResponseDtoList(homeFeedResponseDtoList);
+        homeFeedDto.setHomeFeedList(homeFeedResponseDtoList);
         homeFeedDto.setTotal_count(followService.getFollowCountByUser(user));
         return homeFeedDto;
     }
@@ -71,7 +71,7 @@ public class InstagramController implements InstagramApi {
     }
 
     @Override
-    public List<String> getCarouselMedia(String feed_code) throws IOException {
+    public List<CarouselMediaDto> getCarouselMedia(String feed_code) throws IOException {
         return instagramService.findCarousel(feed_code);
     }
 
@@ -111,5 +111,10 @@ public class InstagramController implements InstagramApi {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 예외 처리
         }
+    }
+
+    @Override
+    public String getImageUrl(String feedCode) throws IOException {
+        return instagramService.getImageUrl(feedCode);
     }
 }
