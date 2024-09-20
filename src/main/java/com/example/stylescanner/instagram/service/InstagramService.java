@@ -36,7 +36,7 @@ public class InstagramService {
         return celebInstaResponseDto;
     }
 
-    public  List<HomeFeedResponseDto> readHomeFeed(Page<Follow> paging) throws IOException {
+    public List<HomeFeedResponseDto> readHomeFeed(Page<Follow> paging) throws IOException {
         List<String> followingList = paging.getContent().stream()
                 .map(Follow::getFolloweeId)
                 .collect(Collectors.toList());
@@ -55,6 +55,9 @@ public class InstagramService {
 
             responseDtos.add(dto);
         }
+
+        HomeFeedDto response = new HomeFeedDto();
+        response.setHomeFeedResponseDtoList(responseDtos);
 
         return responseDtos;
     }
