@@ -5,6 +5,7 @@ import com.example.stylescanner.follow.entity.Follow;
 import com.example.stylescanner.instagram.dto.*;
 import com.example.stylescanner.instagram.util.InstagramGraphApiUtil;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -57,7 +58,7 @@ public class InstagramService {
         }
 
         HomeFeedDto response = new HomeFeedDto();
-        response.setHomeFeedResponseDtoList(responseDtos);
+        response.setHomeFeedList(responseDtos);
 
         return responseDtos;
     }
@@ -71,7 +72,11 @@ public class InstagramService {
         return instagramGraphApiUtil.GetMedia(username,  mediaId, beforeCursor,feed_index);
     }
 
-    public List<String> findCarousel(String feed_code) throws IOException {
+    public List<CarouselMediaDto> findCarousel(String feed_code) throws IOException {
         return instagramGraphApiUtil.GetCarouselMedia(feed_code);
+    }
+
+    public String getImageUrl(String feed_code) throws IOException {
+        return instagramGraphApiUtil.GetImageUrl(feed_code);
     }
 }

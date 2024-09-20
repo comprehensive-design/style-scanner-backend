@@ -34,8 +34,9 @@ public class PostService {
         User user = userRepository.findByEmail(currentUserEmail).orElseThrow(() -> new IllegalArgumentException("not found user"));
 
         Post post = Post.builder()
-                .feedUrl(postCreateDto.getFeedUrl())
+                .feedCode(postCreateDto.getFeedCode())
                 .content(postCreateDto.getContent())
+                .username(postCreateDto.getUsername()) //셀럽 아이디 추가
                 .createdAt(LocalDateTime.now())
                 .user(user)
                 .build();

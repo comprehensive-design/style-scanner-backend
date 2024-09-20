@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 public class MyCommentResponseDto {
-    private String feedUrl;
+    private String feedCode;
     private String feedTitle;
     private CommentDto comment;
 }

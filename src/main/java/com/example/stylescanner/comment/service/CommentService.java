@@ -84,7 +84,7 @@ public class CommentService {
             int post_id = Math.toIntExact(commentDto.getPostId());
             Post post = postRepository.findById(post_id).orElseThrow(() -> new IllegalArgumentException("not found user"));
 
-            myCommentResponseDto.setFeedUrl(post.getFeedUrl());
+            myCommentResponseDto.setFeedCode(post.getFeedCode());
             myCommentResponseDto.setFeedTitle(post.getContent());
 
             myCommentResponseDto.setComment(commentDto);
