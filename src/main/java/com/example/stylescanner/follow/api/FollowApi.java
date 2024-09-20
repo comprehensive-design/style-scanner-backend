@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RequestMapping("/api/follow")
@@ -33,6 +34,10 @@ public interface FollowApi {
     @GetMapping("/followingList")
     @Operation(summary = "사용자 팔로잉 목록 메서드", description = "현재 사용자의 팔로잉 목록을 반환하는 메서드입니다.")
     ResponseEntity<FollowingListResponseDto> followingList(HttpServletRequest httpServletRequest);
+
+    @GetMapping("/followingListPaging")
+    @Operation(summary = "사용자 팔로잉 목록 메서드 페이지네이션", description = "페이지 번호(0부터)와 페이지 크기를 설정하면 해당 크기 만큼 팔로잉 목록이 반환됩니다.")
+    ResponseEntity<FollowingListResponseDto> followingListPaging(HttpServletRequest httpServletRequest, @RequestParam int page, @RequestParam int size) throws IOException;
 
     @PostMapping("/unfollowing")
     @Operation(summary = "사용자 언팔로잉 메서드", description = "언팔로잉 하는 셀럽 followeeId를 넘겨주면 해당 셀럽의 팔로잉을 정보를 제거합니다.")

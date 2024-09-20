@@ -6,7 +6,6 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -54,9 +53,12 @@ public class JwtProvider {
     }
 
     public String generateRefreshToken(String account) {
+        Claims claims = Jwts.claims().setSubject(account);
         Date now = new Date();
 
         return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + refreshExp))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
@@ -122,9 +124,9 @@ public class JwtProvider {
                 token = token.split(" ")[1].trim();
             }
             Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
-            // 만료되었을 시 claims 객체가 안만들어짐, false
+            // 만료되었을 시 claims 객체가 안만들어짐
             return !claims.getBody().getExpiration().before(new Date());
-        } catch (Exception e) {
+        }catch(Exception e){
             return false;
         }
     }
@@ -151,9 +153,14 @@ public class JwtProvider {
      * @param refreshToken
      * @return
      */
-    public String reissueToken(String refreshToken) {
+    public JwtDto reissueToken(String refreshToken) {
         String email = getAccount(refreshToken);
-        return generateAccessToken(email);
+        JwtDto jwtDto = JwtDto.builder().accessToken(generateAccessToken(email))
+                .refreshToken(generateRefreshToken(email))
+                .grantType("Bearer")
+                .build();
+
+        return jwtDto;
     }
 
 }

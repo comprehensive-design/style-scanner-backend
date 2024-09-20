@@ -8,4 +8,5 @@ import java.util.List;
 @Data
 public class FollowingListResponseDto {
     private List<CelebProfileResponseDto> following_list;
+    private int followingCount;
 }

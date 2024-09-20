@@ -91,6 +91,7 @@ public class FollowService {
         FollowingListResponseDto responseDto = new FollowingListResponseDto();
         List<CelebProfileResponseDto> celebProfileList = new ArrayList<>();
 
+
         for (Follow follow : follows) {
             String followeeId = follow.getFolloweeId();
             CelebProfileResponseDto celebProfileResponseDto = null;
@@ -104,6 +105,28 @@ public class FollowService {
             }
         }
         responseDto.setFollowing_list(celebProfileList);
+        responseDto.setFollowingCount(follows.size());
+
+        return responseDto;
+    }
+
+    public FollowingListResponseDto followingListPaging(Page<Follow> follows) throws IOException {
+        FollowingListResponseDto responseDto = new FollowingListResponseDto();
+        List<CelebProfileResponseDto> following_list = new ArrayList<>();
+
+        User user = null;
+        for (Follow follow : follows) {
+            String followeeId = follow.getFolloweeId();
+            CelebProfileResponseDto celebProfileResponseDto = instagramGraphApiUtil.SearchCeleb(followeeId);
+
+            if(celebProfileResponseDto != null){
+                following_list.add(celebProfileResponseDto);
+                user = follow.getUser();
+            }
+        }
+
+        responseDto.setFollowing_list(following_list);
+        responseDto.setFollowingCount(followRepository.findByUser(user).size());
 
         return responseDto;
     }
