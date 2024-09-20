@@ -50,11 +50,12 @@ public class Item {
     private String brand;
 
     @Builder
-    public Item(String feedUrl, String name, Integer price, String itemUrl, Category category, String itemOption, String brand) {
+    public Item(String feedUrl, String name, Integer price, String itemUrl, String shoppingLink, Category category, String itemOption, String brand) {
         this.feedUrl = feedUrl;
         this.name = name;
         this.price = price;
         this.itemUrl = itemUrl;
+        this.shoppingLink = shoppingLink;
         this.category = category;
         this.itemOption = itemOption;
         this.brand = brand;
