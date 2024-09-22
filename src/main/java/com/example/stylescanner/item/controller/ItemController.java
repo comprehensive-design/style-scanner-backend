@@ -7,6 +7,8 @@ import com.example.stylescanner.item.service.ItemService;
 import com.example.stylescanner.post.dto.PostDto;
 import com.example.stylescanner.post.entity.Post;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -29,9 +31,10 @@ public class ItemController implements ItemApi {
     @Override
     public List<ItemDto> ranking(String category, int timeFilter) {
         List<Item> items = itemService.ranking(category, timeFilter);
-        return items.stream()
+        List<ItemDto> itemDtos = items.stream()
                 .map(ItemDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
+        return itemDtos.size() > 100 ? itemDtos.subList(0, 100) : itemDtos;
     }
 
     @Override
