@@ -384,18 +384,23 @@ public class InstagramGraphApiUtil {
                 long timestamp = item.getInt("taken_at");
                 Instant instant = Instant.ofEpochSecond(timestamp);
 
-                JSONArray media_list = item.getJSONArray("carousel_media");
 
                 feedDto.setFeed_code(item.getString("code"));
                 feedDto.setThumbnail_url(item.getString("thumbnail_url"));
 
-                int carousel_media_count = 0;
-                for(int j = 0 ; j< media_list.length(); j++) {
-                    if(!media_list.getJSONObject(j).getBoolean("is_video")){
-                        carousel_media_count++;
+                if(item.has("carousel_media")){
+                    JSONArray media_list = item.getJSONArray("carousel_media");
+
+                    int carousel_media_count = 0;
+                    for(int j = 0 ; j< media_list.length(); j++) {
+                        if(!media_list.getJSONObject(j).getBoolean("is_video")){
+                            carousel_media_count++;
+                        }
                     }
+                    feedDto.setCarousel_count(carousel_media_count);
+                }else{
+                    feedDto.setCarousel_count(1);
                 }
-                feedDto.setCarousel_count(carousel_media_count);
 
                 break;
             }
@@ -546,20 +551,28 @@ public class InstagramGraphApiUtil {
         if(obj == null) return null;
 
         JSONObject data = obj.getJSONObject("data");
-        JSONArray carousel_media = data.getJSONArray("carousel_media");
-
         List<CarouselMediaDto> carouselMediaDtoList = new ArrayList<>();
-        for(int i = 0 ; i < carousel_media.length(); i++) {
-            JSONObject media = carousel_media.getJSONObject(i);
-            if(!media.getBoolean("is_video")){
-                CarouselMediaDto dto = new CarouselMediaDto();
-                dto.setFeed_url(media.getJSONObject("image_versions").getJSONArray("items").getJSONObject(0).getString("url"));
 
-                String feedCode = media.getString("code");
-                dto.setFeedCode(feedCode);
+        if(data.has("carousel_media")){
+            JSONArray carousel_media = data.getJSONArray("carousel_media");
 
-                carouselMediaDtoList.add(dto);
+            for(int i = 0 ; i < carousel_media.length(); i++) {
+                JSONObject media = carousel_media.getJSONObject(i);
+                if(!media.getBoolean("is_video")){
+                    CarouselMediaDto dto = new CarouselMediaDto();
+                    dto.setFeed_url(media.getJSONObject("image_versions").getJSONArray("items").getJSONObject(0).getString("url"));
+
+                    String feedCode = media.getString("code");
+                    dto.setFeedCode(feedCode);
+
+                    carouselMediaDtoList.add(dto);
+                }
             }
+        }else{
+            CarouselMediaDto dto = new CarouselMediaDto();
+            dto.setFeed_url(data.getString("thumbnail_url"));
+            dto.setFeedCode(data.getString("code"));
+            carouselMediaDtoList.add(dto);
         }
 
         return carouselMediaDtoList;
