@@ -562,9 +562,7 @@ public class InstagramGraphApiUtil {
                     CarouselMediaDto dto = new CarouselMediaDto();
                     dto.setFeed_url(media.getJSONObject("image_versions").getJSONArray("items").getJSONObject(0).getString("url"));
 
-                    String feedCode = media.getString("code");
-                    dto.setFeedCode(feedCode);
-
+                    dto.setFeedCode(feed_code);
                     carouselMediaDtoList.add(dto);
                 }
             }
