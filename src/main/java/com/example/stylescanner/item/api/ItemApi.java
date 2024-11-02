@@ -1,7 +1,8 @@
 package com.example.stylescanner.item.api;
 
+import com.example.stylescanner.error.StateResponse;
 import com.example.stylescanner.item.dto.ItemDto;
-import com.example.stylescanner.item.entity.Item;
+import com.example.stylescanner.item.dto.ItemCreateDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,4 +27,7 @@ public interface ItemApi {
     @Operation(summary = "아이템 상세 조회 메서드", description = "아이템의 상세 내용을 조회하기 위한 메서드입니다.")
     ItemDto read(@PathVariable Integer id);
 
+    @PostMapping("/create")
+    @Operation(summary = "아이템 추가 메서드", description = "아이템을 추가하기 위한 메서드입니다.")
+    ResponseEntity<StateResponse> create(@RequestBody ItemCreateDto itemCreateDto) throws Exception;
 }

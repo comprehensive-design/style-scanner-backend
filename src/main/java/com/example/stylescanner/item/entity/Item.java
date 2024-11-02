@@ -49,15 +49,19 @@ public class Item {
     @Column
     private String brand;
 
+    @Column
+    private String platform;
+
     @Builder
-    public Item(String feedUrl, String name, Integer price, String itemUrl, String shoppingLink, Category category, String itemOption, String brand) {
+    public Item(String feedUrl, String name, Integer price, String itemUrl, String shoppingLink, String category, String itemOption, String brand, String platform) {
         this.feedUrl = feedUrl;
         this.name = name;
         this.price = price;
         this.itemUrl = itemUrl;
         this.shoppingLink = shoppingLink;
-        this.category = category;
+        this.category = Category.valueOf(category.toUpperCase());
         this.itemOption = itemOption;
         this.brand = brand;
+        this.platform = platform;
     }
 }

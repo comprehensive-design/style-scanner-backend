@@ -41,6 +41,8 @@ public class ItemDto {
 
     private String brand;
 
+    private String platform;
+
 //    private boolean liked;
 
     public static ItemDto fromEntity(Item item) {
@@ -56,6 +58,7 @@ public class ItemDto {
                 .brand(item.getBrand())
                 .itemUrl(item.getItemUrl())
                 .shoppingLink(item.getShoppingLink())
+                .platform(item.getPlatform())
                 .likeCount(likes != null ? likes.size() : 0)
 //                .liked(isLiked)
                 .build();

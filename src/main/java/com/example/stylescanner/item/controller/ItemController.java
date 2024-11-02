@@ -1,14 +1,15 @@
 package com.example.stylescanner.item.controller;
 
+import com.example.stylescanner.error.StateResponse;
 import com.example.stylescanner.item.api.ItemApi;
 import com.example.stylescanner.item.dto.ItemDto;
+import com.example.stylescanner.item.dto.ItemCreateDto;
 import com.example.stylescanner.item.entity.Item;
 import com.example.stylescanner.item.service.ItemService;
-import com.example.stylescanner.post.dto.PostDto;
-import com.example.stylescanner.post.entity.Post;
+import com.example.stylescanner.jwt.provider.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class ItemController implements ItemApi {
 
     private final ItemService itemService;
+    private final JwtProvider jwtProvider;
 
     @Override
     public List<ItemDto> list(String category) {
@@ -42,4 +44,10 @@ public class ItemController implements ItemApi {
         Item item = itemService.read(id);
         return ItemDto.fromEntity(item);
     }
+
+    @Override
+    public ResponseEntity<StateResponse> create(ItemCreateDto itemCreateDto) throws Exception {
+        return itemService.create(itemCreateDto);
+    }
+
 }
