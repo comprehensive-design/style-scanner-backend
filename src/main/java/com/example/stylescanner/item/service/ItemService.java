@@ -1,7 +1,9 @@
 package com.example.stylescanner.item.service;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.example.stylescanner.error.StateResponse;
 import com.example.stylescanner.item.category.Category;
+import com.example.stylescanner.item.dto.ItemCreateDto;
 import com.example.stylescanner.item.dto.ItemDto;
 import com.example.stylescanner.item.entity.Item;
 import com.example.stylescanner.item.repository.ItemRepository;
@@ -9,8 +11,13 @@ import com.example.stylescanner.itemLike.repository.ItemLikeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -24,9 +31,9 @@ import java.util.stream.Collectors;
 public class ItemService {
 
     @Value("${cloud.aws.s3.bucket}")
-    private String buketName;
+    private String bucketName;
 
-    private final AmazonS3 amazonS3;
+    private final AmazonS3 s3Client;
 
     private final ItemRepository itemRepository;
     private final ItemLikeRepository itemLikeRepository;
@@ -88,18 +95,52 @@ public class ItemService {
     }
 
     @Transactional
-    public void saveAllItems(List<ItemDto> itemDtoList) {
-        List<Item> items = itemDtoList.stream().map(dto -> Item.builder()
-                .feedUrl(dto.getFeedUrl())
-                .name(dto.getName())
-                .price(dto.getPrice())
-                .itemUrl(dto.getItemUrl())
-                .category(dto.getCategory())
-                .itemOption(dto.getItemOption())
-                .brand(dto.getBrand())
-                .shoppingLink(dto.getShoppingLink())
-                .build()).toList();
+    public ResponseEntity<StateResponse> create(ItemCreateDto itemCreateDto) throws Exception {
+        Item item = Item.builder()
+                .feedUrl("test")
+                .name(itemCreateDto.getTitle())
+                .price(itemCreateDto.getCost())
+                .itemUrl(itemCreateDto.getImageUrl())
+                .shoppingLink(itemCreateDto.getShoppingLink())
+                .platform(itemCreateDto.getSellerName())
+                .category(itemCreateDto.getCategory())
+                .build();
 
-        itemRepository.saveAll(items);
+        String s3Path;
+
+        try {
+            item = itemRepository.save(item);
+            s3Path = uploadImageToS3(itemCreateDto.getImageUrl(), item.getId());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(StateResponse.builder()
+                            .code("FAILURE")
+                            .message("이미지 업로드 실패: " + e.getMessage())
+                            .build());
+        }
+
+        item.setItemUrl("https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + s3Path);
+
+        itemRepository.save(item);
+
+        return ResponseEntity.ok(
+                StateResponse.builder()
+                        .code("SUCCESS")
+                        .message("아이템을 성공적으로 추가했습니다. ID: " + item.getId() + " 이미지 경로: " + s3Path)
+                        .build()
+        );
+    }
+
+    public String uploadImageToS3(String imageUrl, Long id) throws Exception {
+        URL url = new URL(imageUrl);
+        try (InputStream inputStream = url.openStream()) {
+            byte[] imageBytes = inputStream.readAllBytes();
+
+            // S3에 이미지 업로드
+            String fileName = id + ".jpg";
+            s3Client.putObject(bucketName, "items/" + fileName, new ByteArrayInputStream(imageBytes), null);
+
+            return "items/" + fileName; // S3에서의 경로
+        }
     }
 }
